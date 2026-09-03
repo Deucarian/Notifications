@@ -1,0 +1,25 @@
+{
+  "name": "Deucarian.Notifications.Tests",
+  "rootNamespace": "Deucarian.Notifications.Tests",
+  "references": [
+    "Deucarian.Diagnostics",
+    "Deucarian.Notifications"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "noEngineReferences": false
+}
+

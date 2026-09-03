@@ -1,0 +1,40 @@
+{
+  "packageId": "com.deucarian.notifications",
+  "displayName": "Deucarian Notifications",
+  "ownedCapabilities": [
+    "notification-lifecycle"
+  ],
+  "runtimeAssemblies": [
+    "Deucarian.Notifications",
+    "Deucarian.Notifications.Theming",
+    "Deucarian.Notifications.Unity"
+  ],
+  "editorAssemblies": [
+    "Deucarian.Notifications.Editor"
+  ],
+  "sampleAssemblies": [
+    "Deucarian.Notifications.Samples.Basic"
+  ],
+  "testAssemblies": [
+    "Deucarian.Notifications.Tests",
+    "Deucarian.Notifications.PlayModeTests"
+  ],
+  "requiredDependencies": [
+    "com.deucarian.diagnostics",
+    "com.deucarian.editor",
+    "com.deucarian.theming",
+    "com.unity.textmeshpro",
+    "com.unity.ugui"
+  ],
+  "optionalVersionDefinedDependencies": [],
+  "allowedDirectDebugCalls": [],
+  "allowedDirectUnityObjectLifetimeCalls": [
+    {
+      "file": "Editor/DeucarianNotificationPrefabFactory.cs",
+      "reason": "The editor-only factory owns a temporary unsaved prefab source object and destroys it immediately after PrefabUtility serializes the package asset; no runtime object lifetime is bypassed."
+    }
+  ],
+  "expectedSamplesRoot": "Samples~",
+  "samplePolicy": "compiled-example",
+  "operationalPackage": true
+}

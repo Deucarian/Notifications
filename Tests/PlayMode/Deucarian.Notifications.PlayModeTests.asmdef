@@ -1,0 +1,21 @@
+{
+  "name": "Deucarian.Notifications.PlayModeTests",
+  "rootNamespace": "Deucarian.Notifications.PlayModeTests",
+  "references": [
+    "Deucarian.Notifications",
+    "Deucarian.Notifications.Unity",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "noEngineReferences": false
+}

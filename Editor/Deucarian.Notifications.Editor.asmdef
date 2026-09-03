@@ -1,0 +1,22 @@
+{
+  "name": "Deucarian.Notifications.Editor",
+  "rootNamespace": "Deucarian.Notifications.Editor",
+  "references": [
+    "Deucarian.Editor",
+    "Deucarian.Notifications",
+    "Deucarian.Notifications.Unity",
+    "Unity.TextMeshPro",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

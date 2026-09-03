@@ -1,0 +1,17 @@
+{
+  "name": "Deucarian.Notifications",
+  "rootNamespace": "Deucarian.Notifications",
+  "references": [
+    "Deucarian.Diagnostics"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
+

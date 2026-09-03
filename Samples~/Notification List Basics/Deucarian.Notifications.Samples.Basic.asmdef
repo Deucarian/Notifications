@@ -1,0 +1,17 @@
+{
+  "name": "Deucarian.Notifications.Samples.Basic",
+  "rootNamespace": "Deucarian.Notifications.Samples.Basic",
+  "references": [
+    "Deucarian.Notifications",
+    "Deucarian.Notifications.Unity"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
