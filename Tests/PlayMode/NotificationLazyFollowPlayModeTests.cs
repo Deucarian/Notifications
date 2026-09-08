@@ -10,7 +10,7 @@ namespace Deucarian.Notifications.PlayModeTests
     public sealed class NotificationLazyFollowPlayModeTests
     {
         [UnityTest]
-        public IEnumerator FollowOffAndDisableRestorePlacementAndScreenSpaceNeverDrifts()
+        public IEnumerator FollowOffAndDisableRestorePlacementAndOverlayNeverDrifts()
         {
             var anchor = new GameObject("Moving anchor", typeof(RectTransform), typeof(Canvas));
             var canvas = anchor.GetComponent<Canvas>();
@@ -50,6 +50,50 @@ namespace Deucarian.Notifications.PlayModeTests
                 Assert.That(Vector3.Distance(root.transform.localPosition, local), Is.LessThan(.001f));
             }
             finally { Object.DestroyImmediate(anchor); }
+        }
+
+        [UnityTest]
+        public IEnumerator CameraSpaceFollowUsesExistingAnchorAndRestoresWhenCameraIsRemoved()
+        {
+            var cameraObject = new GameObject("Existing camera", typeof(Camera));
+            var anchor = new GameObject("Camera canvas", typeof(RectTransform), typeof(Canvas));
+            anchor.transform.SetParent(cameraObject.transform, false);
+            var canvas = anchor.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = cameraObject.GetComponent<Camera>();
+            canvas.planeDistance = 1;
+            var root = Object.Instantiate(Resources.Load<GameObject>("Deucarian/Notifications/Defaults/DefaultNotificationList"), anchor.transform);
+            var view = root.GetComponent<NotificationListView>();
+            try
+            {
+                yield return null;
+                Canvas.ForceUpdateCanvases();
+                Vector3 local = root.transform.localPosition;
+                var settings = NotificationPresentationSettings.Default;
+                settings.lazyFollow = true;
+                settings.follow = new DeucarianLazyFollowSettings { positionDeadZone = 10, rotationDeadZone = 180, smoothingSeconds = 2 };
+                view.ConfigurePresentation(settings);
+                yield return null;
+                Assert.That(view.SupportsLazyFollow, Is.True);
+                Vector3 held = root.transform.position;
+                cameraObject.transform.position = Vector3.right * .1f;
+                Canvas.ForceUpdateCanvases();
+                yield return null;
+                Assert.That(Vector3.Distance(root.transform.position, held), Is.LessThan(.001f));
+                Assert.That(Vector3.Distance(root.transform.localPosition, local), Is.GreaterThan(.001f));
+                Assert.That(cameraObject.transform.position, Is.EqualTo(Vector3.right * .1f));
+                settings.lazyFollow = false;
+                view.ConfigurePresentation(settings);
+                Assert.That(Vector3.Distance(root.transform.localPosition, local), Is.LessThan(.001f));
+                settings.lazyFollow = true;
+                view.ConfigurePresentation(settings);
+                yield return null;
+                canvas.worldCamera = null;
+                yield return null;
+                Assert.That(view.SupportsLazyFollow, Is.False);
+                Assert.That(Vector3.Distance(root.transform.localPosition, local), Is.LessThan(.001f));
+            }
+            finally { Object.DestroyImmediate(cameraObject); }
         }
     }
 }

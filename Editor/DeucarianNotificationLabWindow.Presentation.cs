@@ -32,7 +32,7 @@ namespace Deucarian.Notifications.Editor
                 presentationSettings.follow.positionDeadZone = EditorGUILayout.Slider("Movement dead zone", presentationSettings.follow.positionDeadZone, 0, 0.5f);
                 presentationSettings.follow.rotationDeadZone = EditorGUILayout.Slider("Rotation dead zone", presentationSettings.follow.rotationDeadZone, 0, 30);
                 presentationSettings.follow.smoothingSeconds = EditorGUILayout.Slider("Follow response", presentationSettings.follow.smoothingSeconds, 0, 2);
-                EditorGUILayout.LabelField("World-space lists follow their parent anchor. Screen-space lists keep their fixed placement.", EditorStyles.wordWrappedLabel);
+                EditorGUILayout.LabelField("World-space and camera-space lists follow their parent anchor. Overlay lists stay fixed; no camera is created or moved.", EditorStyles.wordWrappedLabel);
             }
             if (EditorGUI.EndChangeCheck()) runtimeConnection?.ConfigurePresentation(presentationSettings);
             EditorGUILayout.LabelField(runtimeConnection == null

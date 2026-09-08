@@ -38,7 +38,10 @@ namespace Deucarian.Notifications.Unity
             get
             {
                 var canvas = GetComponentInParent<Canvas>();
-                return canvas != null && canvas.rootCanvas.renderMode == RenderMode.WorldSpace;
+                if (canvas == null) return false;
+                Canvas rootCanvas = canvas.rootCanvas;
+                return rootCanvas.renderMode == RenderMode.WorldSpace ||
+                       (rootCanvas.renderMode == RenderMode.ScreenSpaceCamera && rootCanvas.worldCamera != null);
             }
         }
 

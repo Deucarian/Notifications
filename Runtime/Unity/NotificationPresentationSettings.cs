@@ -14,7 +14,7 @@ namespace Deucarian.Notifications.Unity
         public NotificationTransition hide;
         [Range(0, 2)] public float showSeconds;
         [Range(0, 2)] public float hideSeconds;
-        [Tooltip("Let a world-space warning list settle behind its moving parent anchor. Screen-space lists stay fixed.")]
+        [Tooltip("Let a world-space or camera-space warning list settle behind its moving parent anchor. Overlay lists stay fixed.")]
         public bool lazyFollow;
         public DeucarianLazyFollowSettings follow;
 
