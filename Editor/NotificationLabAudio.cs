@@ -62,7 +62,11 @@ namespace Deucarian.Notifications.Editor
                 Status = "Audio audition is unavailable in this editor session (including batch mode).";
                 return false;
             }
-            if (!preview.Play(clip)) { Status = "Unity could not start the clip preview."; return false; }
+            var processed = preview as IDeucarianProcessedAudioPreviewService;
+            bool played = processed != null
+                ? processed.PlayProcessed(clip, Mathf.Clamp01(resolution.Cue.Volume), resolution.Cue.ResolvePitch((sequence * 0.618034f) % 1))
+                : preview.Play(clip);
+            if (!played) { Status = processed?.LastError ?? "Unity could not start the clip preview."; return false; }
             ownsPreview = true;
             previousVariants[request.RoleId] = selected;
             Status = "Played " + clip.name + " · " + Experience;

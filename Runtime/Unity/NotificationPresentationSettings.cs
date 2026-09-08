@@ -1,4 +1,5 @@
 using System;
+using Deucarian.UI;
 using UnityEngine;
 
 namespace Deucarian.Notifications.Unity
@@ -13,11 +14,15 @@ namespace Deucarian.Notifications.Unity
         public NotificationTransition hide;
         [Range(0, 2)] public float showSeconds;
         [Range(0, 2)] public float hideSeconds;
+        [Tooltip("Let a world-space warning list settle behind its moving parent anchor. Screen-space lists stay fixed.")]
+        public bool lazyFollow;
+        public DeucarianLazyFollowSettings follow;
 
         public static NotificationPresentationSettings Default => new NotificationPresentationSettings
         {
             maxVisible = 5, show = NotificationTransition.Fade, hide = NotificationTransition.Fade,
-            showSeconds = 0.18f, hideSeconds = 0.14f
+            showSeconds = 0.18f, hideSeconds = 0.14f, lazyFollow = false,
+            follow = DeucarianLazyFollowSettings.Default
         };
 
         public NotificationPresentationSettings Sanitized()
@@ -27,6 +32,7 @@ namespace Deucarian.Notifications.Unity
             result.maxVisible = Mathf.Clamp(result.maxVisible, 1, 20);
             result.showSeconds = FiniteSeconds(result.showSeconds);
             result.hideSeconds = FiniteSeconds(result.hideSeconds);
+            result.follow = result.follow.Sanitized();
             return result;
         }
 

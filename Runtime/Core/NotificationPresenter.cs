@@ -10,17 +10,26 @@ namespace Deucarian.Notifications
     /// <summary>Connects one notification store to a replaceable list view.</summary>
     public sealed class NotificationPresenter : IDisposable
     {
-        private readonly NotificationStore store;
+        private readonly INotificationSource source;
         private readonly INotificationListView view;
         private bool active;
         private bool disposed;
 #if UNITY_EDITOR
         private NotificationEditorTarget editorTarget;
+        private readonly Func<NotificationEditorTarget> registerEditorTarget;
 #endif
 
         public NotificationPresenter(NotificationStore store, INotificationListView view)
+            : this((INotificationSource)store, view)
         {
-            this.store = store ?? throw new ArgumentNullException(nameof(store));
+#if UNITY_EDITOR
+            registerEditorTarget = () => NotificationEditorTargets.Register(store, view);
+#endif
+        }
+
+        public NotificationPresenter(INotificationSource source, INotificationListView view)
+        {
+            this.source = source ?? throw new ArgumentNullException(nameof(source));
             this.view = view ?? throw new ArgumentNullException(nameof(view));
         }
 
@@ -33,11 +42,19 @@ namespace Deucarian.Notifications
             }
 
             active = true;
-            store.SnapshotChanged += HandleSnapshotChanged;
-            view.Render(store.Snapshot);
+            source.SnapshotChanged += HandleSnapshotChanged;
+            try
+            {
+                view.Render(source.Snapshot);
 #if UNITY_EDITOR
-            editorTarget = NotificationEditorTargets.Register(store, view);
+                editorTarget = registerEditorTarget?.Invoke();
 #endif
+            }
+            catch
+            {
+                Deactivate();
+                throw;
+            }
         }
 
         public void Deactivate()
@@ -48,7 +65,7 @@ namespace Deucarian.Notifications
             }
 
             active = false;
-            store.SnapshotChanged -= HandleSnapshotChanged;
+            source.SnapshotChanged -= HandleSnapshotChanged;
 #if UNITY_EDITOR
             editorTarget?.Dispose();
             editorTarget = null;

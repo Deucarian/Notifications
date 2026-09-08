@@ -2,6 +2,8 @@
   "name": "Deucarian.Notifications.Editor",
   "rootNamespace": "Deucarian.Notifications.Editor",
   "references": [
+    "Deucarian.Common",
+    "Deucarian.UI",
     "Deucarian.Editor",
     "Deucarian.Theming",
     "Deucarian.Theming.Editor",

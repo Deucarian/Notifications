@@ -27,11 +27,20 @@ namespace Deucarian.Notifications.Unity
         private NotificationSnapshot snapshot = NotificationSnapshot.Empty;
         private NotificationSnapshot selected = NotificationSnapshot.Empty;
         private TMP_Text overflow;
+        private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
 
         public int VisibleCount => selected.Count;
         public int OverflowCount => Math.Max(0, snapshot.Count - selected.Count);
         public int RenderedRowCount => slots.Count;
         public NotificationPresentationSettings Presentation => presentation.Sanitized();
+        public bool SupportsLazyFollow
+        {
+            get
+            {
+                var canvas = GetComponentInParent<Canvas>();
+                return canvas != null && canvas.rootCanvas.renderMode == RenderMode.WorldSpace;
+            }
+        }
 
         public void Configure(RectTransform rowContainer, NotificationRowView template,
             float x = 0.05f, float y = 0.5f, bool useSafeArea = true)
@@ -44,6 +53,7 @@ namespace Deucarian.Notifications.Unity
         public void ConfigurePresentation(NotificationPresentationSettings settings)
         {
             presentation = settings.Sanitized();
+            if (!presentation.lazyFollow) followMotion.Restore(transform);
             foreach (Slot slot in slots) slot.Motion.Complete();
             for (int i = slots.Count - 1; i >= 0; i--)
                 if (i >= presentation.maxVisible || !slots[i].Motion.IsShowing) Retire(i);
@@ -186,8 +196,11 @@ namespace Deucarian.Notifications.Unity
 
         private void OnDisable()
         {
+            followMotion.Restore(transform);
             foreach (Slot slot in slots) slot.Motion.Complete();
         }
+        private void LateUpdate() => followMotion.Advance(transform,
+            Presentation.lazyFollow && SupportsLazyFollow, Presentation.follow, Time.unscaledDeltaTime);
         private void OnEnable() { ApplyAnchor(); if (container != null && rowPrefab != null) Render(snapshot); }
         private void OnValidate() { presentation = Presentation; ApplyAnchor(); }
     }

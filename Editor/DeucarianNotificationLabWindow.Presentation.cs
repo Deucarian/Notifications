@@ -25,6 +25,15 @@ namespace Deucarian.Notifications.Editor
             presentationSettings.hide = (NotificationTransition)EditorGUILayout.EnumPopup("Hide transition", presentationSettings.hide);
             presentationSettings.showSeconds = EditorGUILayout.Slider("Show duration", presentationSettings.showSeconds, 0, 2);
             presentationSettings.hideSeconds = EditorGUILayout.Slider("Hide duration", presentationSettings.hideSeconds, 0, 2);
+            presentationSettings.lazyFollow = EditorGUILayout.Toggle("Lazy follow anchor", presentationSettings.lazyFollow);
+            if (presentationSettings.lazyFollow)
+            {
+                if (GUILayout.Button("Reset follow tuning")) presentationSettings.follow = Deucarian.UI.DeucarianLazyFollowSettings.Default;
+                presentationSettings.follow.positionDeadZone = EditorGUILayout.Slider("Movement dead zone", presentationSettings.follow.positionDeadZone, 0, 0.5f);
+                presentationSettings.follow.rotationDeadZone = EditorGUILayout.Slider("Rotation dead zone", presentationSettings.follow.rotationDeadZone, 0, 30);
+                presentationSettings.follow.smoothingSeconds = EditorGUILayout.Slider("Follow response", presentationSettings.follow.smoothingSeconds, 0, 2);
+                EditorGUILayout.LabelField("World-space lists follow their parent anchor. Screen-space lists keep their fixed placement.", EditorStyles.wordWrappedLabel);
+            }
             if (EditorGUI.EndChangeCheck()) runtimeConnection?.ConfigurePresentation(presentationSettings);
             EditorGUILayout.LabelField(runtimeConnection == null
                     ? "Choose a runtime destination to preview motion and the application's visual theme. None disables motion."
