@@ -5,6 +5,7 @@
     "Deucarian.Notifications",
     "Deucarian.Notifications.Unity",
     "Deucarian.Theming",
+    "Deucarian.UI",
     "Unity.TextMeshPro",
     "UnityEngine.UI"
   ],

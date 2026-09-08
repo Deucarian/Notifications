@@ -6,7 +6,7 @@ using Deucarian.Diagnostics;
 namespace Deucarian.Notifications
 {
     /// <summary>Authoritative keyed store for active notification episodes.</summary>
-    public sealed class NotificationStore : IDisposable
+    public sealed class NotificationStore : INotificationSource, INotificationCommands, IDisposable
     {
         private static long nextRuntimeId;
 
@@ -28,7 +28,7 @@ namespace Deucarian.Notifications
             this.feedbackSink = feedbackSink;
             string runtimeId = Interlocked.Increment(ref nextRuntimeId).ToString();
             diagnosticsRegistration = DiagnosticProviderRegistry.Register(
-                new NotificationDiagnosticProvider("notifications." + runtimeId, this));
+                new NotificationDiagnosticProvider("notifications." + runtimeId, CaptureDiagnostics));
         }
 
         public event EventHandler<NotificationChangedEventArgs> SnapshotChanged;

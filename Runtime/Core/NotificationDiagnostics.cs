@@ -1,3 +1,4 @@
+using System;
 using Deucarian.Diagnostics;
 
 namespace Deucarian.Notifications
@@ -31,12 +32,12 @@ namespace Deucarian.Notifications
     internal sealed class NotificationDiagnosticProvider : IDiagnosticProvider
     {
         private readonly string providerId;
-        private readonly NotificationStore store;
+        private readonly Func<NotificationDiagnosticState> capture;
 
-        public NotificationDiagnosticProvider(string providerId, NotificationStore store)
+        public NotificationDiagnosticProvider(string providerId, Func<NotificationDiagnosticState> capture)
         {
             this.providerId = providerId;
-            this.store = store;
+            this.capture = capture ?? throw new ArgumentNullException(nameof(capture));
         }
 
         public string ProviderId => providerId;
@@ -44,7 +45,7 @@ namespace Deucarian.Notifications
 
         public void Collect(DiagnosticReportBuilder builder)
         {
-            NotificationDiagnosticState state = store.CaptureDiagnostics();
+            NotificationDiagnosticState state = capture();
             DiagnosticSection section = builder.AddSection(providerId, DisplayName);
             section.AddItem("active_count", "Active count", state.ActiveCount.ToString());
             section.AddItem(
@@ -94,14 +95,14 @@ namespace Deucarian.Notifications
     internal sealed class NotificationSchedulerDiagnosticProvider : IDiagnosticProvider
     {
         private readonly string providerId;
-        private readonly NotificationEpisodeController controller;
+        private readonly Func<NotificationSchedulerDiagnosticState> capture;
 
         public NotificationSchedulerDiagnosticProvider(
             string providerId,
-            NotificationEpisodeController controller)
+            Func<NotificationSchedulerDiagnosticState> capture)
         {
             this.providerId = providerId;
-            this.controller = controller;
+            this.capture = capture ?? throw new ArgumentNullException(nameof(capture));
         }
 
         public string ProviderId => providerId;
@@ -109,7 +110,7 @@ namespace Deucarian.Notifications
 
         public void Collect(DiagnosticReportBuilder builder)
         {
-            NotificationSchedulerDiagnosticState state = controller.CaptureDiagnostics();
+            NotificationSchedulerDiagnosticState state = capture();
             DiagnosticSection section = builder.AddSection(providerId, DisplayName);
             section.AddItem("tracked_count", "Tracked conditions", state.TrackedCount.ToString());
             section.AddItem(

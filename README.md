@@ -149,6 +149,26 @@ nine-unit vertical padding and a four-unit gap between labels. Long text uses
 ellipsis within its own rectangle; the severity stripe and ten-unit row spacing
 stay independent of text and animation.
 
+## Testing and optional motion
+
+Open **Notification Lab** from the Deucarian Control Center. The pinned
+destination identifies editor-only lifecycle preview versus the running
+application. Start with the message, severity, lifetime and **Add message**.
+Advanced controls contain overflow/repetition tests, audio, presentation and
+reusable recipe assets; recipes never save a live connection or injected rows.
+
+Presentation settings include **Lazy follow anchor**. This is Deucarian UI
+motion applied to the whole world-space or screen-space-camera list, with movement/rotation dead zones
+and response tuning. Turning it off or disabling the list restores fixed local
+placement. Screen-space overlays (and camera-space canvases without an assigned
+camera) remain fixed. The list never creates, replaces, or moves a camera.
+Editor-only lifecycle preview does
+not claim to reproduce runtime theme or motion.
+
+Presenters consume `INotificationSource`; condition adapters and test injection
+consume `INotificationCommands`. Diagnostic observers only receive immutable
+snapshot functions, not the store's mutation API.
+
 ## Diagnostics and privacy
 
 Every live `NotificationStore` and `NotificationEpisodeController`

@@ -72,7 +72,7 @@ namespace Deucarian.Notifications
             public bool TimedOut;
         }
 
-        private readonly NotificationStore store;
+        private readonly INotificationCommands store;
         private readonly INotificationClock clock;
         private readonly Dictionary<NotificationId, EpisodeState> states =
             new Dictionary<NotificationId, EpisodeState>();
@@ -82,6 +82,9 @@ namespace Deucarian.Notifications
         private bool disposed;
 
         public NotificationEpisodeController(NotificationStore store, INotificationClock clock)
+            : this((INotificationCommands)store, clock) { }
+
+        public NotificationEpisodeController(INotificationCommands store, INotificationClock clock)
         {
             this.store = store ?? throw new ArgumentNullException(nameof(store));
             this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
@@ -89,7 +92,7 @@ namespace Deucarian.Notifications
             diagnosticsRegistration = DiagnosticProviderRegistry.Register(
                 new NotificationSchedulerDiagnosticProvider(
                     "notifications.scheduler." + runtimeId,
-                    this));
+                    CaptureDiagnostics));
         }
 
         public void EvaluateBatch(IEnumerable<NotificationConditionSample> samples)
