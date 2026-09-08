@@ -12,7 +12,7 @@ namespace Deucarian.Notifications.Editor
             DeucarianEditorChrome.DrawPackageHeader(
                 "notifications",
                 "Notification View Style",
-                "Reusable severity accents for non-modal notification rows.");
+                "Theming color roles and fallback severity accents for notification rows.");
             serializedObject.Update();
             DrawDefaultInspector();
             serializedObject.ApplyModifiedProperties();

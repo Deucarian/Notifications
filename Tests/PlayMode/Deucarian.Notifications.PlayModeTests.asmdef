@@ -4,6 +4,8 @@
   "references": [
     "Deucarian.Notifications",
     "Deucarian.Notifications.Unity",
+    "Deucarian.Theming",
+    "Unity.TextMeshPro",
     "UnityEngine.UI"
   ],
   "includePlatforms": [],

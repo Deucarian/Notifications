@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Deucarian.Notifications.Unity;
 
 namespace Deucarian.Notifications.Editor
 {
@@ -12,6 +13,8 @@ namespace Deucarian.Notifications.Editor
         private readonly string prefix = "deucarian.lab." + Guid.NewGuid().ToString("N") + ".";
         private readonly HashSet<NotificationId> injected = new HashSet<NotificationId>();
         private bool disposed;
+        private readonly INotificationPresentationTarget presentationTarget;
+        private readonly NotificationPresentationSettings originalPresentation;
 
         public NotificationLabRuntimeConnection(NotificationStore source, NotificationEditorTarget target,
             INotificationClock clock)
@@ -19,6 +22,8 @@ namespace Deucarian.Notifications.Editor
             this.source = source ?? throw new ArgumentNullException(nameof(source));
             this.target = target ?? throw new ArgumentNullException(nameof(target));
             this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
+            presentationTarget = target.View as INotificationPresentationTarget;
+            if (presentationTarget != null) originalPresentation = presentationTarget.Presentation;
             if (ReferenceEquals(source, target.Store)) throw new ArgumentException("The lab cannot target itself.", nameof(target));
             if (!target.IsAvailable) throw new ArgumentException("The runtime target is no longer active.", nameof(target));
             // Connect an empty session: choosing a destination must never replay or auto-ping old examples.
@@ -28,6 +33,13 @@ namespace Deucarian.Notifications.Editor
 
         public NotificationEditorTarget Target => target;
         public bool IsAvailable => !disposed && target.IsAvailable;
+        public bool SupportsPresentation => presentationTarget != null;
+        public NotificationPresentationSettings Presentation => presentationTarget != null
+            ? presentationTarget.Presentation : NotificationPresentationSettings.Default;
+        public void ConfigurePresentation(NotificationPresentationSettings settings)
+        {
+            if (IsAvailable) presentationTarget?.ConfigurePresentation(settings);
+        }
 
         private void OnChanged(object sender, NotificationChangedEventArgs change)
         {
@@ -40,7 +52,7 @@ namespace Deucarian.Notifications.Editor
                 var id = new NotificationId(prefix + definition.Id.Value);
                 current.Add(id);
                 commands.Add(NotificationCommand.Activate(new NotificationDefinition(id, definition.Severity,
-                    definition.Title, definition.Body, definition.Priority, definition.FeedbackRoleId)));
+                    definition.Title, definition.Body, definition.Priority, definition.FeedbackRoleId, definition.Lifetime)));
             }
             foreach (NotificationId id in injected)
                 if (!current.Contains(id)) commands.Add(NotificationCommand.Resolve(id));
@@ -67,6 +79,12 @@ namespace Deucarian.Notifications.Editor
             injected.Clear();
             // Also clean up after the presenter is deactivated, if its store is still alive.
             Apply(commands);
+            if (!(target.View is UnityEngine.Object obj) || obj != null)
+            {
+                // A deactivated presenter no longer observes cleanup. Refresh before restoring layout.
+                target.View.Render(target.Store.Snapshot);
+                presentationTarget?.ConfigurePresentation(originalPresentation);
+            }
         }
     }
 }

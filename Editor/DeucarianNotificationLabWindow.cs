@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using Deucarian.Editor;
 using Deucarian.Theming;
 using Deucarian.Theming.Editor;
+using Deucarian.Notifications.Unity;
 using UnityEditor;
 using UnityEngine;
 
 namespace Deucarian.Notifications.Editor
 {
     /// <summary>Interactive editor-only notification lifecycle lab with an isolated store.</summary>
-    public sealed class DeucarianNotificationLabWindow : EditorWindow, INotificationListView
+    public sealed partial class DeucarianNotificationLabWindow : EditorWindow, INotificationListView
     {
         private sealed class EditorClock : INotificationClock
         {
@@ -108,7 +109,7 @@ namespace Deucarian.Notifications.Editor
                 Repaint();
             }
             session?.Tick();
-            if (session != null && session.PendingCount > 0 && EditorApplication.timeSinceStartup >= nextRepaint)
+            if (session != null && (session.PendingCount > 0 || HasTimedMessages()) && EditorApplication.timeSinceStartup >= nextRepaint)
             {
                 nextRepaint = EditorApplication.timeSinceStartup + 0.1d;
                 Repaint();
@@ -137,6 +138,7 @@ namespace Deucarian.Notifications.Editor
                 new DeucarianEditorStatusChip(session.PingCount + " ping requests", DeucarianEditorStatus.Success));
             scroll = EditorGUILayout.BeginScrollView(scroll);
             DrawDestination();
+            DrawPresentation();
             if (position.width >= 940f)
             {
                 using (new EditorGUILayout.HorizontalScope())
@@ -163,6 +165,9 @@ namespace Deucarian.Notifications.Editor
             EditorGUILayout.LabelField("Message", DeucarianEditorStyles.MutedLabel);
             messageBody = EditorGUILayout.TextArea(messageBody, GUILayout.MinHeight(48f));
             severity = (NotificationSeverity)EditorGUILayout.EnumPopup("Severity", severity);
+            lifetimeKind = (NotificationLifetimeKind)EditorGUILayout.EnumPopup("Lifetime", lifetimeKind);
+            if (lifetimeKind == NotificationLifetimeKind.Timed)
+                lifetimeSeconds = Mathf.Max(0.1f, SanitizeDelay(EditorGUILayout.FloatField("Duration (seconds)", lifetimeSeconds)));
             activationDelay = SanitizeDelay(EditorGUILayout.FloatField("Show delay (seconds)", activationDelay));
             recoveryDelay = SanitizeDelay(EditorGUILayout.FloatField("Recovery delay (seconds)", recoveryDelay));
             using (new EditorGUILayout.HorizontalScope())
@@ -181,11 +186,12 @@ namespace Deucarian.Notifications.Editor
                 if (DeucarianEditorButtons.Secondary("Show three at once"))
                     session.ShowBatch(new[]
                     {
-                        NotificationLabSession.Example(NotificationSeverity.Info),
-                        NotificationLabSession.Example(NotificationSeverity.Warning),
-                        NotificationLabSession.Example(NotificationSeverity.Error)
+                        NotificationLabSession.Example(NotificationSeverity.Info, Lifetime()),
+                        NotificationLabSession.Example(NotificationSeverity.Warning, Lifetime()),
+                        NotificationLabSession.Example(NotificationSeverity.Error, Lifetime())
                     }, Timing());
             }
+            if (DeucarianEditorButtons.Secondary("Add 10 mixed messages (overflow test)")) ShowMixed();
             EditorGUILayout.LabelField("Repeated active messages stay in one row. New simultaneous messages share one ping.",
                 DeucarianEditorStyles.MutedLabel);
             DeucarianEditorCards.EndCard();
@@ -216,7 +222,7 @@ namespace Deucarian.Notifications.Editor
                 GUILayout.Space(22f);
             }
             // Resolving a row may replace the snapshot synchronously. Keep this draw pass stable.
-            NotificationSnapshot visible = snapshot;
+            NotificationSnapshot visible = NotificationVisibility.Select(snapshot, presentationSettings.Sanitized().maxVisible);
             for (int i = 0; i < visible.Count; i++)
             {
                 NotificationItem item = visible[i];
@@ -235,8 +241,11 @@ namespace Deucarian.Notifications.Editor
                     EditorGUILayout.LabelField(item.Definition.Body, EditorStyles.wordWrappedLabel);
                     EditorGUILayout.LabelField("Episode " + item.Episode + " · Priority " + item.Definition.Priority,
                         DeucarianEditorStyles.MutedLabel);
+                    EditorGUILayout.LabelField(LifetimeLabel(item), DeucarianEditorStyles.MutedLabel);
                 });
             }
+            if (snapshot.Count > visible.Count) EditorGUILayout.LabelField("+" + (snapshot.Count - visible.Count) + " more · still active",
+                DeucarianEditorStyles.SectionTitle);
             DeucarianEditorPreviewLabChrome.End();
         }
 
@@ -288,7 +297,7 @@ namespace Deucarian.Notifications.Editor
         {
             audio.Configure(paletteSet, experience, soundEnabled && runtimeConnection == null);
             session.Show(new NotificationDefinition(lastCustomId, severity, messageTitle, messageBody,
-                (int)severity * 10, NotificationLabSession.FeedbackRole(severity)), Timing());
+                (int)severity * 10, NotificationLabSession.FeedbackRole(severity), Lifetime()), Timing());
         }
 
         private void AddCustom()
@@ -339,6 +348,7 @@ namespace Deucarian.Notifications.Editor
             {
                 audio.Configure(paletteSet, experience, false);
                 runtimeConnection = new NotificationLabRuntimeConnection(session.Store, target, new EditorClock());
+                presentationSettings = runtimeConnection.Presentation;
             }
         }
 

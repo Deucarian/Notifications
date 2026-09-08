@@ -4,6 +4,15 @@
 
 ### Added
 
+- Persistent and timed notification lifetimes, with expiry after activation debounce
+  and no timer restart on repeated active updates.
+- Five-slot default presentation with priority/age ordering, non-destructive overflow
+  and a +N more indicator; fading rows keep their slot until exit completes.
+- Independent None/Fade/Scale/Slide show and hide controls using Deucarian UI motion.
+- Live Deucarian visual theme roles and optional typography on notification rows.
+- Lifetime, countdown, mixed-overflow scenarios and temporary runtime presentation
+  overrides in Notification Lab, plus a shared-chrome list inspector.
+
 - Package-level Notification Lab in Deucarian Control Center with isolated editor
   message preview, editable examples, activation/recovery timing, repeated and
   batched requests, per-row resolution, reset, and semantic audio audition.

@@ -24,18 +24,7 @@ namespace Deucarian.Notifications.Editor
         public NotificationStore Store { get; }
         public int PingCount { get; private set; }
         public int LastBatchSize { get; private set; }
-        public int PendingCount
-        {
-            get
-            {
-                int count = 0;
-                foreach (NotificationConditionSample sample in conditions.Values)
-                {
-                    if (sample.IsUnhealthy != Store.Snapshot.TryGet(sample.Definition.Id, out _)) count++;
-                }
-                return count;
-            }
-        }
+        public int PendingCount => controller.PendingCount;
 
         public void Show(NotificationDefinition definition, NotificationTimingPolicy timing)
         {
@@ -101,13 +90,13 @@ namespace Deucarian.Notifications.Editor
             return feedback != null && feedback.TryRequestFeedback(request);
         }
 
-        public static NotificationDefinition Example(NotificationSeverity severity)
+        public static NotificationDefinition Example(NotificationSeverity severity, NotificationLifetime lifetime = default)
         {
             return new NotificationDefinition(
                 "lab.example." + severity.ToString().ToLowerInvariant(), severity,
                 "Example " + severity.ToString().ToLowerInvariant(),
                 "This is a test message. Resolve it to simulate recovery.",
-                (int)severity * 10, FeedbackRole(severity));
+                (int)severity * 10, FeedbackRole(severity), lifetime);
         }
 
         public static string FeedbackRole(NotificationSeverity severity)

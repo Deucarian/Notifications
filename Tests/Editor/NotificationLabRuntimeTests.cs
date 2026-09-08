@@ -13,10 +13,12 @@ namespace Deucarian.Notifications.Tests
     public sealed class NotificationLabRuntimeTests
     {
         private sealed class Clock : INotificationClock { public double NowSeconds { get; set; } }
-        private sealed class View : INotificationListView
+        private sealed class View : INotificationListView, INotificationPresentationTarget
         {
             public NotificationSnapshot Snapshot = NotificationSnapshot.Empty;
             public void Render(NotificationSnapshot snapshot) => Snapshot = snapshot;
+            public NotificationPresentationSettings Presentation { get; private set; } = NotificationPresentationSettings.Default;
+            public void ConfigurePresentation(NotificationPresentationSettings settings) => Presentation = settings.Sanitized();
         }
         private sealed class Feedback : INotificationFeedbackSink
         {
@@ -165,6 +167,43 @@ namespace Deucarian.Notifications.Tests
         }
 
         [Test]
+        public void TimedRuntimeMessagesExpireAndPresentationOverridesRestoreOnDisconnect()
+        {
+            var clock = new Clock();
+            var view = new View();
+            var original = view.Presentation;
+            using (var host = new NotificationStore())
+            using (var presenter = new NotificationPresenter(host, view))
+            using (var session = new NotificationLabSession(clock, null))
+            {
+                presenter.Activate();
+                host.ApplyBatch(new[] { NotificationCommand.Activate(Message("real", "Real")) }, 0);
+                using (var connection = new NotificationLabRuntimeConnection(session.Store, Target(host), clock))
+                {
+                    var settings = original;
+                    settings.maxVisible = 2;
+                    settings.show = NotificationTransition.Slide;
+                    connection.ConfigurePresentation(settings);
+                    session.Show(new NotificationDefinition("timed", NotificationSeverity.Info, "Timed", "Test",
+                        lifetime: NotificationLifetime.Timed(3)), Immediate());
+                    Assert.AreEqual(2, host.Snapshot.Count);
+                    Assert.AreEqual(NotificationLifetimeKind.Timed,
+                        host.Snapshot.Items.Single(x => x.Definition.Title == "Timed").Definition.Lifetime.Kind);
+                    Assert.AreEqual(2, view.Presentation.maxVisible, "Changes to messages must not restore the presentation early.");
+                    clock.NowSeconds = 3;
+                    session.Tick();
+                    Assert.AreEqual(1, host.Snapshot.Count);
+                    session.Show(Message("remaining", "Remaining test"), Immediate());
+                    presenter.Deactivate();
+                }
+                Assert.AreEqual(1, view.Snapshot.Count, "Cleanup refreshes even a deactivated presenter view.");
+                Assert.AreEqual("real", view.Snapshot[0].Id.Value);
+                Assert.AreEqual(original.maxVisible, view.Presentation.maxVisible);
+                Assert.AreEqual(original.show, view.Presentation.show);
+            }
+        }
+
+        [Test]
         public void NonemptySessionCannotAutoplayWhenConnecting()
         {
             var feedback = new Feedback();
@@ -280,6 +319,7 @@ namespace Deucarian.Notifications.Tests
                     Assert.AreEqual(0, host.Snapshot.Count, "Losing the runtime destination removes its injected messages.");
                     Assert.AreEqual(0, window.SessionForTests.Store.Snapshot.Count);
                     Assert.AreEqual(0, window.SessionForTests.PendingCount);
+                    Assert.AreEqual(0, view.RenderedRowCount, "No injected rows survive disconnect during an exit animation.");
                 }
             }
             finally

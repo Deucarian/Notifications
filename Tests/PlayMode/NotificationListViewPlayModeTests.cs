@@ -27,6 +27,9 @@ namespace Deucarian.Notifications.PlayModeTests
             Assert.NotNull(prefab);
             GameObject instance = Object.Instantiate(prefab);
             NotificationListView view = instance.GetComponent<NotificationListView>();
+            var presentation = NotificationPresentationSettings.Default;
+            presentation.show = presentation.hide = NotificationTransition.None;
+            view.ConfigurePresentation(presentation);
             FeedbackSink feedback = new FeedbackSink();
             using (NotificationStore store = new NotificationStore(feedback))
             using (NotificationPresenter presenter = new NotificationPresenter(store, view))
