@@ -3,7 +3,12 @@
   "rootNamespace": "Deucarian.Notifications.Tests",
   "references": [
     "Deucarian.Diagnostics",
-    "Deucarian.Notifications"
+    "Deucarian.Notifications",
+    "Deucarian.Notifications.Editor",
+    "Deucarian.Notifications.Unity",
+    "Deucarian.Theming",
+    "Deucarian.Theming.Editor",
+    "Deucarian.Editor"
   ],
   "includePlatforms": [
     "Editor"
@@ -22,4 +27,3 @@
   ],
   "noEngineReferences": false
 }
-

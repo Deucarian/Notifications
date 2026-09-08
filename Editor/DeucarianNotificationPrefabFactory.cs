@@ -103,7 +103,7 @@ namespace Deucarian.Notifications.Editor
             return rect;
         }
 
-        private static NotificationRowView CreateRowTemplate(
+        internal static NotificationRowView CreateRowTemplate(
             RectTransform root,
             NotificationViewStyle style)
         {
@@ -123,8 +123,9 @@ namespace Deucarian.Notifications.Editor
             row.GetComponent<LayoutElement>().preferredHeight = 82f;
 
             Image accent = CreateImage(rect, "Severity", new Vector2(0f, 0f), new Vector2(6f, 82f));
-            TextMeshProUGUI title = CreateText(rect, "Title", 24f, FontStyles.Bold, -9f, -5f, 590f, 32f);
-            TextMeshProUGUI body = CreateText(rect, "Body", 20f, FontStyles.Normal, -9f, -39f, 590f, 32f);
+            // Nine-unit vertical padding, a 28-unit title and a four-unit gap before the instruction.
+            TextMeshProUGUI title = CreateText(rect, "Title", 24f, FontStyles.Bold, -9f, 590f, 28f);
+            TextMeshProUGUI body = CreateText(rect, "Body", 20f, FontStyles.Normal, -41f, 590f, 32f);
             row.GetComponent<NotificationRowView>().Configure(title, body, accent, style);
             row.SetActive(false);
             return row.GetComponent<NotificationRowView>();
@@ -155,7 +156,6 @@ namespace Deucarian.Notifications.Editor
             float size,
             FontStyles style,
             float top,
-            float bottom,
             float width,
             float height)
         {

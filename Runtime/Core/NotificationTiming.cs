@@ -68,6 +68,8 @@ namespace Deucarian.Notifications
             public bool RawUnhealthy;
             public bool IsActive;
             public double RawChangedAt;
+            public double ActivatedAt;
+            public bool TimedOut;
         }
 
         private readonly NotificationStore store;
@@ -113,10 +115,14 @@ namespace Deucarian.Notifications
             ApplyDueTransitions(clock.NowSeconds);
         }
 
+        public int PendingCount => pendingActivationCount + pendingRecoveryCount;
+
         public void Reset(bool resolveActive = true)
         {
             ThrowIfDisposed();
             states.Clear();
+            pendingActivationCount = 0;
+            pendingRecoveryCount = 0;
             if (resolveActive)
             {
                 store.ClearAll(clock.NowSeconds);
@@ -164,6 +170,12 @@ namespace Deucarian.Notifications
 
             state.Definition = sample.Definition;
             state.Timing = sample.Timing;
+            // A new explicit sample may restart an expired notice; ticking alone never reactivates it.
+            if (state.TimedOut && sample.IsUnhealthy)
+            {
+                state.TimedOut = false;
+                state.RawChangedAt = now;
+            }
             if (state.RawUnhealthy != sample.IsUnhealthy)
             {
                 state.RawUnhealthy = sample.IsUnhealthy;
@@ -180,11 +192,21 @@ namespace Deucarian.Notifications
             {
                 EpisodeState state = pair.Value;
                 double elapsed = Math.Max(0d, now - state.RawChangedAt);
+                if (state.IsActive && state.Definition.Lifetime.Kind == NotificationLifetimeKind.Timed &&
+                    now - state.ActivatedAt >= state.Definition.Lifetime.Seconds)
+                {
+                    state.IsActive = false;
+                    state.TimedOut = true;
+                    commands.Add(NotificationCommand.Resolve(pair.Key));
+                    continue;
+                }
+                if (state.TimedOut) continue;
                 if (state.RawUnhealthy)
                 {
                     if (!state.IsActive && elapsed >= state.Timing.ActivationDebounceSeconds)
                     {
                         state.IsActive = true;
+                        state.ActivatedAt = now;
                         commands.Add(NotificationCommand.Activate(state.Definition));
                     }
                     else if (!state.IsActive)

@@ -20,8 +20,9 @@ namespace Deucarian.Notifications
             string title,
             string body,
             int priority = 0,
-            string feedbackRoleId = null)
-            : this(new NotificationId(id), severity, title, body, priority, feedbackRoleId)
+            string feedbackRoleId = null,
+            NotificationLifetime lifetime = default)
+            : this(new NotificationId(id), severity, title, body, priority, feedbackRoleId, lifetime)
         {
         }
 
@@ -31,7 +32,8 @@ namespace Deucarian.Notifications
             string title,
             string body,
             int priority = 0,
-            string feedbackRoleId = null)
+            string feedbackRoleId = null,
+            NotificationLifetime lifetime = default)
         {
             if (id.IsEmpty)
             {
@@ -43,6 +45,7 @@ namespace Deucarian.Notifications
             Title = title ?? string.Empty;
             Body = body ?? string.Empty;
             Priority = priority;
+            Lifetime = lifetime;
             FeedbackRoleId = string.IsNullOrWhiteSpace(feedbackRoleId)
                 ? string.Empty
                 : feedbackRoleId.Trim();
@@ -54,6 +57,7 @@ namespace Deucarian.Notifications
         public string Body { get; }
         public int Priority { get; }
         public string FeedbackRoleId { get; }
+        public NotificationLifetime Lifetime { get; }
 
         public bool Equals(NotificationDefinition other)
         {
@@ -61,6 +65,7 @@ namespace Deucarian.Notifications
                    Id == other.Id &&
                    Severity == other.Severity &&
                    Priority == other.Priority &&
+                   Lifetime.Equals(other.Lifetime) &&
                    string.Equals(Title, other.Title, StringComparison.Ordinal) &&
                    string.Equals(Body, other.Body, StringComparison.Ordinal) &&
                    string.Equals(FeedbackRoleId, other.FeedbackRoleId, StringComparison.Ordinal);
@@ -75,6 +80,7 @@ namespace Deucarian.Notifications
                 int hash = Id.GetHashCode();
                 hash = (hash * 397) ^ (int)Severity;
                 hash = (hash * 397) ^ Priority;
+                hash = (hash * 397) ^ Lifetime.GetHashCode();
                 hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(Title);
                 hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(Body);
                 hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(FeedbackRoleId);
