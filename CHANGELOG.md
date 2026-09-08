@@ -2,6 +2,11 @@
 
 ## [0.1.0] - Unreleased
 
+### Fixed
+
+- Separated title and instruction text in the shared row prefab and its repair generator.
+  Added geometry and rendered-glyph regression coverage, including long content and pooled rows.
+
 ### Added
 
 - Persistent and timed notification lifetimes, with expiry after activation debounce

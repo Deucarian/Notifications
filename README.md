@@ -144,6 +144,11 @@ uses safe-area-relative normalized anchoring, leaves all graphics non-raycast,
 and removes inactive rows without gaps. Use **Assets > Create > Deucarian >
 Notifications > Repair Default View Assets** to reproduce both assets.
 
+The default 620 × 82 row reserves separate title and instruction rectangles, with
+nine-unit vertical padding and a four-unit gap between labels. Long text uses
+ellipsis within its own rectangle; the severity stripe and ten-unit row spacing
+stay independent of text and animation.
+
 ## Diagnostics and privacy
 
 Every live `NotificationStore` and `NotificationEpisodeController`
