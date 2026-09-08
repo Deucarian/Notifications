@@ -36,12 +36,15 @@ namespace Deucarian.Notifications.Editor
         [SerializeField] private NotificationSeverity severity = NotificationSeverity.Warning;
         [SerializeField] private float activationDelay;
         [SerializeField] private float recoveryDelay = 1f;
+        [SerializeField] private bool advancedTests;
+        [SerializeField] private bool showPresentation;
+        [SerializeField] private bool showAudio;
         private double nextRepaint;
 
         public static void OpenWindow()
         {
             var window = GetWindow<DeucarianNotificationLabWindow>("Notification Lab");
-            window.minSize = new Vector2(540f, 540f);
+            window.minSize = new Vector2(420f, 400f);
             window.AdoptPaletteSelection();
             window.Show();
             window.Focus();
@@ -49,6 +52,7 @@ namespace Deucarian.Notifications.Editor
 
         private void OnEnable()
         {
+            RestoreDraft();
             AdoptPaletteSelection();
             StartSession();
             EditorApplication.update += Tick;
@@ -58,6 +62,7 @@ namespace Deucarian.Notifications.Editor
 
         private void OnDisable()
         {
+            SaveDraft();
             EditorApplication.update -= Tick;
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             AssemblyReloadEvents.beforeAssemblyReload -= StopSession;
@@ -132,13 +137,8 @@ namespace Deucarian.Notifications.Editor
                 EditorGUILayout.HelpBox("The test session will restart after the Play Mode transition.", MessageType.Info);
                 return;
             }
-            DeucarianEditorStatusChipRow.Draw(
-                new DeucarianEditorStatusChip(snapshot.Count + " active", DeucarianEditorStatus.Info),
-                new DeucarianEditorStatusChip(session.PendingCount + " pending", DeucarianEditorStatus.Warning),
-                new DeucarianEditorStatusChip(session.PingCount + " ping requests", DeucarianEditorStatus.Success));
-            scroll = EditorGUILayout.BeginScrollView(scroll);
             DrawDestination();
-            DrawPresentation();
+            scroll = EditorGUILayout.BeginScrollView(scroll);
             if (position.width >= 940f)
             {
                 using (new EditorGUILayout.HorizontalScope())
@@ -152,10 +152,19 @@ namespace Deucarian.Notifications.Editor
                 DrawComposer();
                 DrawLivePreview();
             }
-            DrawAudio();
+            DrawRecipeControls();
+            showPresentation = EditorGUILayout.Foldout(showPresentation, "Appearance and motion", true);
+            if (showPresentation) DrawPresentation();
+            showAudio = EditorGUILayout.Foldout(showAudio, "Audio", true);
+            if (showAudio) DrawAudio();
             EditorGUILayout.EndScrollView();
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (DeucarianEditorButtons.Primary("Add message", !string.IsNullOrWhiteSpace(messageTitle))) AddCustom();
+                if (DeucarianEditorButtons.Secondary("Resolve all", snapshot.Count > 0 || session.PendingCount > 0)) session.ResolveAll();
+            }
             DeucarianEditorStatusPanel.DrawStatusBar(runtimeConnection == null ? "Editor preview only" : "Connected to running app",
-                "Last ping batch: " + session.LastBatchSize + " message(s)", "Deucarian Notifications");
+                snapshot.Count + " active · " + session.PendingCount + " waiting", experience.ToString());
         }
 
         private void DrawComposer()
@@ -168,11 +177,13 @@ namespace Deucarian.Notifications.Editor
             lifetimeKind = (NotificationLifetimeKind)EditorGUILayout.EnumPopup("Lifetime", lifetimeKind);
             if (lifetimeKind == NotificationLifetimeKind.Timed)
                 lifetimeSeconds = Mathf.Max(0.1f, SanitizeDelay(EditorGUILayout.FloatField("Duration (seconds)", lifetimeSeconds)));
+            advancedTests = EditorGUILayout.Foldout(advancedTests, "Advanced tests", true);
+            if (advancedTests)
+            {
             activationDelay = SanitizeDelay(EditorGUILayout.FloatField("Show delay (seconds)", activationDelay));
             recoveryDelay = SanitizeDelay(EditorGUILayout.FloatField("Recovery delay (seconds)", recoveryDelay));
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (DeucarianEditorButtons.Primary("Add new message", true)) AddCustom();
                 if (DeucarianEditorButtons.Secondary("Update last", !lastCustomId.IsEmpty)) ShowCustom();
                 if (DeucarianEditorButtons.Secondary("Resolve last", !lastCustomId.IsEmpty)) session.Resolve(lastCustomId);
             }
@@ -194,13 +205,16 @@ namespace Deucarian.Notifications.Editor
             if (DeucarianEditorButtons.Secondary("Add 10 mixed messages (overflow test)")) ShowMixed();
             EditorGUILayout.LabelField("Repeated active messages stay in one row. New simultaneous messages share one ping.",
                 DeucarianEditorStyles.MutedLabel);
+            EditorGUILayout.LabelField(session.PingCount + " ping requests · last batch " + session.LastBatchSize,
+                EditorStyles.wordWrappedMiniLabel);
+            }
             DeucarianEditorCards.EndCard();
         }
 
         private void DrawLivePreview()
         {
-            DeucarianEditorPreviewLabChrome.Begin("Live message preview",
-                runtimeConnection == null ? "Preview only. Choose a runtime destination above to see these in your app."
+            DeucarianEditorPreviewLabChrome.Begin("Lifecycle preview",
+                runtimeConnection == null ? "Content and timing only. Theme, fade, scale, slide and lazy follow are shown in the running app."
                     : "These test messages also appear in your application's real list. Hardware warnings are not shown here.");
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -275,7 +289,7 @@ namespace Deucarian.Notifications.Editor
             }
             EditorGUILayout.LabelField(audio.Status, DeucarianEditorStyles.MutedLabel);
             EditorGUILayout.LabelField(
-                "Source-clip audition uses the editor preview volume. Runtime palette volume and pitch require an application playback test.",
+                "Editor audition applies palette volume and pitch. Application mixing and spatial audio are tested in the running app.",
                 DeucarianEditorStyles.MutedLabel);
             DeucarianEditorCards.EndCard();
         }
@@ -308,8 +322,7 @@ namespace Deucarian.Notifications.Editor
 
         private void DrawDestination()
         {
-            DeucarianEditorCards.BeginCard("Message destination",
-                subtitle: "Play Mode can send test messages to an existing NotificationPresenter. No scene setup required.");
+            DeucarianEditorCards.BeginCard("Destination");
             runtimeTargets.Clear();
             var labels = new List<string> { "Editor preview only" };
             int selected = 0;
@@ -324,9 +337,10 @@ namespace Deucarian.Notifications.Editor
             int choice = EditorGUILayout.Popup("Destination", selected, labels.ToArray());
             if (choice != selected) SelectRuntimeTarget(choice == 0 ? null : runtimeTargets[choice - 1]);
             EditorGUILayout.LabelField(!EditorApplication.isPlaying
-                    ? "Start Play Mode, select the application's warning list here, then press Add new message."
+                    ? "Editor preview · start Play Mode to choose an application list. No camera is created."
                     : runtimeTargets.Count == 0 ? "Waiting for an active scene list. The app must create and activate a NotificationPresenter."
-                    : "Changing destination clears test messages. Closing this lab or leaving Play Mode removes only this lab's messages.",
+                    : runtimeConnection == null ? "Editor preview · choose a running list to test its visuals and sound."
+                    : "Connected · test messages and visual overrides are removed on disconnect.",
                 EditorStyles.wordWrappedLabel);
             if (!string.IsNullOrEmpty(runtimeStatus)) EditorGUILayout.LabelField(runtimeStatus, EditorStyles.wordWrappedLabel);
             DeucarianEditorCards.EndCard();

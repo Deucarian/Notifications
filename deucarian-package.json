@@ -20,6 +20,7 @@
     "Deucarian.Notifications.PlayModeTests"
   ],
   "requiredDependencies": [
+    "com.deucarian.common",
     "com.deucarian.diagnostics",
     "com.deucarian.editor",
     "com.deucarian.theming",

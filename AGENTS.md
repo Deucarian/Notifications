@@ -34,3 +34,4 @@ forbidden.
 Run the shared Package Registry validator and all EditMode/PlayMode tests.
 Work on `develop`; do not edit `main`, publish, or create releases as part of
 ordinary feature work.
+- `com.deucarian.common`: safe cleanup of transient editor recipe assets after failed creation.

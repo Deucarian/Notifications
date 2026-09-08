@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0 - Unreleased
+
+- Separate notification read/command ports; add optional Deucarian lazy follow, a simplified runtime lab, pinned actions, saved test recipes and processed semantic audio preview.
+
 ## [0.1.0] - Unreleased
 
 ### Fixed
