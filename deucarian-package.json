@@ -23,6 +23,7 @@
     "com.deucarian.diagnostics",
     "com.deucarian.editor",
     "com.deucarian.theming",
+    "com.deucarian.ui",
     "com.unity.textmeshpro",
     "com.unity.ugui"
   ],

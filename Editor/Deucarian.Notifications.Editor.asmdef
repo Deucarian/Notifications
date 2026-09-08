@@ -3,6 +3,8 @@
   "rootNamespace": "Deucarian.Notifications.Editor",
   "references": [
     "Deucarian.Editor",
+    "Deucarian.Theming",
+    "Deucarian.Theming.Editor",
     "Deucarian.Notifications",
     "Deucarian.Notifications.Unity",
     "Unity.TextMeshPro",

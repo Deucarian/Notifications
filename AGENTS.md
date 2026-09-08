@@ -21,7 +21,8 @@ generic media playback, localization, XR hardware, or application health policy.
 ## Dependencies
 
 - `com.deucarian.diagnostics`: mandatory sanitized operational diagnostics.
-- `com.deucarian.theming`: semantic audio integration assembly only.
+- `com.deucarian.theming`: semantic audio and visual theme integration.
+- `com.deucarian.ui`: reusable visibility transitions; notification views only adapt them to their rows.
 - Unity UGUI and TextMeshPro: notification-specific uGUI presenter.
 
 No production logging is emitted. If logging is introduced, add Deucarian
@@ -33,4 +34,3 @@ forbidden.
 Run the shared Package Registry validator and all EditMode/PlayMode tests.
 Work on `develop`; do not edit `main`, publish, or create releases as part of
 ordinary feature work.
-
