@@ -14,6 +14,9 @@ namespace Deucarian.Notifications
         private readonly INotificationListView view;
         private bool active;
         private bool disposed;
+#if UNITY_EDITOR
+        private NotificationEditorTarget editorTarget;
+#endif
 
         public NotificationPresenter(NotificationStore store, INotificationListView view)
         {
@@ -32,6 +35,9 @@ namespace Deucarian.Notifications
             active = true;
             store.SnapshotChanged += HandleSnapshotChanged;
             view.Render(store.Snapshot);
+#if UNITY_EDITOR
+            editorTarget = NotificationEditorTargets.Register(store, view);
+#endif
         }
 
         public void Deactivate()
@@ -43,6 +49,10 @@ namespace Deucarian.Notifications
 
             active = false;
             store.SnapshotChanged -= HandleSnapshotChanged;
+#if UNITY_EDITOR
+            editorTarget?.Dispose();
+            editorTarget = null;
+#endif
         }
 
         public void Dispose()
@@ -73,4 +83,3 @@ namespace Deucarian.Notifications
         }
     }
 }
-
