@@ -39,7 +39,7 @@ namespace Deucarian.Notifications.Editor
         public static void OpenWindow()
         {
             var window = GetWindow<DeucarianNotificationLabWindow>("Notification Lab");
-            window.minSize = new Vector2(420f, 400f);
+            DeucarianEditorWorkspace.ConfigureWindow(window);
             window.AdoptPaletteSelection();
             window.Show();
             window.Focus();
