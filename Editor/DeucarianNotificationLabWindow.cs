@@ -6,6 +6,7 @@ using Deucarian.Theming.Editor;
 using Deucarian.Notifications.Unity;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Deucarian.Notifications.Editor
 {
@@ -38,7 +39,8 @@ namespace Deucarian.Notifications.Editor
 
         public static void OpenWindow()
         {
-            var window = GetWindow<DeucarianNotificationLabWindow>("Notification Lab");
+            var window = DeucarianEditorWindowPages.GetStandalone<DeucarianNotificationLabWindow>("Notification Lab");
+            window.navigation?.Navigate(NotificationsControlCenterRegistration.ToolId);
             DeucarianEditorWorkspace.ConfigureWindow(window);
             window.AdoptPaletteSelection();
             window.Show();
@@ -57,6 +59,8 @@ namespace Deucarian.Notifications.Editor
 
         private void OnDisable()
         {
+            navigation?.Dispose();
+            navigation = null;
             SaveDraft();
             workspace?.Dispose();
             workspace = null;
@@ -187,11 +191,25 @@ namespace Deucarian.Notifications.Editor
             SanitizeDelay(activationDelay), SanitizeDelay(recoveryDelay));
 
         private static float SanitizeDelay(float value) => float.IsNaN(value) || float.IsInfinity(value) ? 0f : Mathf.Clamp(value, 0f, 60f);
-
         public void CreateGUI()
         {
+            navigation?.Dispose();
+            navigation = new DeucarianEditorPageSession(this, NotificationsControlCenterRegistration.ToolId, BuildPage, deactivateHome: StopAudio);
+        }
+
+        internal static IDeucarianEditorPage CreatePage() =>
+            DeucarianEditorWindowPages.Create<DeucarianNotificationLabWindow>(
+                (window, root) => window.BuildPage(root), deactivate: window => window.StopAudio());
+
+        private DeucarianEditorPageSession navigation;
+        private VisualElement pageRoot;
+        private VisualElement PageRoot => pageRoot ?? rootVisualElement;
+
+        private void BuildPage(VisualElement root)
+        {
+            pageRoot = root;
             workspace?.Dispose();
-            workspace = new NotificationLabWorkspaceAdapter(rootVisualElement, this);
+            workspace = new NotificationLabWorkspaceAdapter(PageRoot, this);
             workspace.Refresh();
         }
 

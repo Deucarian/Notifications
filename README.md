@@ -1,10 +1,15 @@
 # Deucarian Notifications
 
+## In-window navigation
+
+The left sidebar changes pages in the current window, keeping each page's draft and session alive. Right-click a sidebar item and choose **Open in new window** for an independent workspace. Closing a workspace releases its pages; ordinary page changes do not reset lab messages or stop package operations.
+
+
 ## Shared workspace (0.3.0)
 
 Migrate the live Notification Lab to the shared Editor workspace, preserving test-message isolation, runtime targeting, lifetime controls, motion previews, audio and saved recipes.
 
-Requires Editor 1.4.1 or newer. Development is delivered through Git `#develop`; this change does not promote the stable `#main` channel.
+Requires Editor 1.5.0 or newer. Development is delivered through Git `#develop`; this change does not promote the stable `#main` channel.
 
 ## Notification Lab workspace (development)
 

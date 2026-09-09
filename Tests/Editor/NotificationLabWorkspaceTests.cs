@@ -72,6 +72,32 @@ namespace Deucarian.Notifications.Tests
             finally { window.Inputs = original; window.Close(); }
         }
 
+        [UnityTest]
+        public IEnumerator SidebarKeepsMessagesAndDraftWhenReturningToNotifications()
+        {
+            var window = ScriptableObject.CreateInstance<DeucarianNotificationLabWindow>();
+            var original = window.Inputs;
+            try
+            {
+                window.Inputs = new NotificationLabRecipeData { sound = false, recoveryDelay = 0,
+                    title = "Keep this warning", lifetime = NotificationLifetimeKind.UntilResolved };
+                window.Show();
+                yield return null;
+                yield return Click(window.rootVisualElement.Q<Button>("lab-add"));
+                var session = window.SessionForTests;
+                var title = window.rootVisualElement.Q<TextField>("lab-title");
+                var bounds = window.position;
+                yield return Click(window.rootVisualElement.Q<Button>("workspace-nav-audio"));
+                Assert.That(window.rootVisualElement.Q("lab-title"), Is.Null);
+                yield return Click(window.rootVisualElement.Q<Button>("workspace-nav-deucarian.notifications.lab"));
+                Assert.That(window.rootVisualElement.Q<TextField>("lab-title"), Is.SameAs(title));
+                Assert.That(window.SessionForTests, Is.SameAs(session));
+                Assert.That(session.Store.Snapshot.Count, Is.EqualTo(1));
+                Assert.That(window.position, Is.EqualTo(bounds));
+            }
+            finally { window.Inputs = original; window.Close(); }
+        }
+
         private static IEnumerator Click(Button button)
         {
             Assert.That(button, Is.Not.Null);
