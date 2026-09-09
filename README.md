@@ -1,5 +1,34 @@
 # Deucarian Notifications
 
+## Shared workspace (0.3.0)
+
+Migrate the live Notification Lab to the shared Editor workspace, preserving test-message isolation, runtime targeting, lifetime controls, motion previews, audio and saved recipes.
+
+Requires Editor 1.4.1 or newer. Development is delivered through Git `#develop`; this change does not promote the stable `#main` channel.
+
+## Notification Lab workspace (development)
+
+Open Notification Lab from Control Center. Its new Test, Appearance and Audio
+tabs use the paired development version of `com.deucarian.editor`; the Editor
+package owns all layout, colours, typography and reusable controls.
+
+- Add persistent or timed messages; expand **Test scenarios** for batching,
+  deduplication, delays and overflow tests. **Clear test messages** removes this
+  lab's active and pending messages immediately; delayed recovery remains available
+  as a separate scenario action.
+- Select **Running app** in Play Mode to connect an active list. Multiple lists
+  get an explicit target picker. Connecting never replays previous examples.
+- Appearance changes preview limits locally and apply motion/lazy-follow overrides
+  to a connected list. Its original settings are restored on disconnect. The
+  editor's lifecycle preview does not simulate camera motion or runtime transitions.
+- Audio uses palette audition in Editor preview, and the application's existing
+  audio route when connected. It never plays both for the same activation.
+- Recipes and inputs survive reopening; live messages and connections do not.
+
+The sidebar opens the paired development Control Center, Package Installer,
+Theme Manager, Audio Palette Lab and Diagnostics workspaces. Specialist workflows
+remain owned by those packages.
+
 `com.deucarian.notifications` owns reusable keyed notification lifecycle. It
 keeps one authoritative immutable snapshot, applies atomic update batches, and
 requests at most one semantic feedback cue for newly activated items in a
