@@ -40,6 +40,7 @@ namespace Deucarian.Notifications.Editor
         public static void OpenWindow()
         {
             var window = DeucarianEditorWindowPages.GetStandalone<DeucarianNotificationLabWindow>("Notification Lab");
+            window.navigation?.Navigate(NotificationsControlCenterRegistration.ToolId);
             DeucarianEditorWorkspace.ConfigureWindow(window);
             window.AdoptPaletteSelection();
             window.Show();
