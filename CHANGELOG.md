@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1] - 2026-09-09
+
+- Keep sidebar navigation in the current workspace and retain page drafts while switching tools.
+- Support explicitly opening independent workspaces through the sidebar context menu.
+
+
 ## 0.3.0 - 2026-09-09
 
 - Connect Notification Lab to the shared Editor-owned workspace. Test, Appearance
