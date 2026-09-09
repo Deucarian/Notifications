@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 - 2026-09-09
+
+- Connect Notification Lab to the shared Editor-owned workspace. Test, Appearance
+  and Audio tabs now bind the existing lifecycle, runtime targeting, presentation
+  overrides, palette audition and recipe workflows through a notification adapter.
+- Show real visible/overflow counts and live countdowns, preserve row identity
+  while updating, and keep test-message cleanup isolated from application warnings.
+- Remove the lab's package-local IMGUI layout. No runtime dependencies or
+  notification lifetime policies changed.
+
 ## 0.2.0 - Unreleased
 
 - Separate notification read/command ports; add optional Deucarian lazy follow, a simplified runtime lab, pinned actions, saved test recipes and processed semantic audio preview.

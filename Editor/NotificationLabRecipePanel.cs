@@ -9,24 +9,13 @@ namespace Deucarian.Notifications.Editor
     internal sealed class NotificationLabRecipePanel
     {
         [SerializeField] private NotificationLabRecipe recipe;
-        [SerializeField] private bool expanded;
-
-        internal void Draw(Func<NotificationLabRecipeData> capture,
-            Action<NotificationLabRecipeData> apply, Action<NotificationLifetimeKind> add,
-            Action overflow)
+        internal void Bind(DeucarianEditorWorkspaceForm form, Func<NotificationLabRecipeData> capture,
+            Action<NotificationLabRecipeData> apply)
         {
-            expanded = EditorGUILayout.Foldout(expanded, "Test recipes", true);
-            if (!expanded) return;
-            recipe = (NotificationLabRecipe)EditorGUILayout.ObjectField("Recipe", recipe, typeof(NotificationLabRecipe), false);
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                if (DeucarianEditorButtons.Secondary("Load recipe", recipe != null)) apply(recipe.settings);
-                if (DeucarianEditorButtons.Secondary("Save as recipe…")) Save(capture());
-            }
-            if (DeucarianEditorButtons.Secondary("Timed notice · 5 seconds")) add(NotificationLifetimeKind.Timed);
-            if (DeucarianEditorButtons.Secondary("Persistent warning · resolve manually")) add(NotificationLifetimeKind.UntilResolved);
-            if (DeucarianEditorButtons.Secondary("Overflow · 10 mixed messages")) overflow();
-            EditorGUILayout.LabelField("Recipes save inputs, not live messages, connections or application state.", EditorStyles.wordWrappedMiniLabel);
+            form.Asset("lab-recipe", "Recipe", typeof(NotificationLabRecipe), () => recipe, value => recipe = (NotificationLabRecipe)value);
+            form.Action("lab-load-recipe", "Load recipe", () => apply(recipe.settings), () => recipe != null);
+            form.Action("lab-save-recipe", "Save as recipe…", () => Save(capture()));
+            form.Note(() => "Recipes save inputs, not live messages, connections or application state.");
         }
 
         private void Save(NotificationLabRecipeData inputs)
