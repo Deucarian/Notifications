@@ -4,7 +4,7 @@
 
 Migrate the live Notification Lab to the shared Editor workspace, preserving test-message isolation, runtime targeting, lifetime controls, motion previews, audio and saved recipes.
 
-Requires Editor 1.4.0 or newer. Development is delivered through Git `#develop`; this change does not promote the stable `#main` channel.
+Requires Editor 1.4.1 or newer. Development is delivered through Git `#develop`; this change does not promote the stable `#main` channel.
 
 ## Notification Lab workspace (development)
 
