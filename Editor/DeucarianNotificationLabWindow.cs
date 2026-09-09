@@ -231,7 +231,12 @@ namespace Deucarian.Notifications.Editor
         internal void ResolveLast() { session?.Resolve(lastCustomId); workspace?.Refresh(); }
         internal void ClearMessages() { session?.Reset(); lastCustomId = default; audio?.Stop(); workspace?.Refresh(); }
         internal void StopAudio() => audio?.Stop();
-        internal void OpenAudioLab() { if (paletteSet != null) DeucarianAudioPaletteLabWindow.Open(paletteSet); }
+        internal void OpenAudioLab()
+        {
+            string guid = paletteSet == null ? null : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(paletteSet));
+            DeucarianEditorNavigation.Open(PageRoot, DeucarianEditorWorkspaceNavigation.AudioToolId,
+                string.IsNullOrEmpty(guid) ? null : "palette:" + guid);
+        }
         internal void ShowThree() => session?.ShowBatch(new[] {
             NotificationLabSession.Example(NotificationSeverity.Info, Lifetime()),
             NotificationLabSession.Example(NotificationSeverity.Warning, Lifetime()),
