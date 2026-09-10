@@ -7,6 +7,9 @@ namespace Deucarian.Notifications.Editor
     [CustomEditor(typeof(NotificationListView))]
     public sealed class DeucarianNotificationListViewEditor : UnityEditor.Editor
     {
+        public override UnityEngine.UIElements.VisualElement CreateInspectorGUI() =>
+            DeucarianEditorInspector.Create(OnInspectorGUI);
+
         public override void OnInspectorGUI()
         {
             DeucarianEditorChrome.DrawPackageHeader("notifications", "Notification List",
@@ -18,7 +21,7 @@ namespace Deucarian.Notifications.Editor
             serializedObject.ApplyModifiedProperties();
             var view = (NotificationListView)target;
             if (changed && EditorApplication.isPlaying) view.ConfigurePresentation(view.Presentation);
-            EditorGUILayout.HelpBox("Overflow stays active; the limit never resolves messages. None disables motion. " +
+            DeucarianEditorTextGUI.HelpBox("Overflow stays active; the limit never resolves messages. None disables motion. " +
                 "Rows use the nearest Deucarian theme provider or project theme, with fallback colors when unavailable.", MessageType.Info);
         }
     }

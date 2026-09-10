@@ -18,7 +18,8 @@ namespace Deucarian.Notifications.Tests
             public NotificationSnapshot Snapshot = NotificationSnapshot.Empty;
             public void Render(NotificationSnapshot snapshot) => Snapshot = snapshot;
             public NotificationPresentationSettings Presentation { get; private set; } = NotificationPresentationSettings.Default;
-            public void ConfigurePresentation(NotificationPresentationSettings settings) => Presentation = settings.Sanitized();
+            public int PresentationChanges;
+            public void ConfigurePresentation(NotificationPresentationSettings settings) { PresentationChanges++; Presentation = settings.Sanitized(); }
         }
         private sealed class Feedback : INotificationFeedbackSink
         {
@@ -51,6 +52,34 @@ namespace Deucarian.Notifications.Tests
                 store.Dispose();
                 Assert.IsFalse(target.IsAvailable);
                 Assert.IsFalse(NotificationEditorTargets.Capture().Any(x => x.Store == store));
+            }
+        }
+
+        [Test]
+        public void EditingMessageInputsDoesNotCompleteRuntimeTransitions()
+        {
+            var view = new View();
+            using (var host = new NotificationStore())
+            using (var presenter = new NotificationPresenter(host, view))
+            {
+                presenter.Activate();
+                var window = ScriptableObject.CreateInstance<DeucarianNotificationLabWindow>();
+                var original = window.Inputs;
+                try
+                {
+                    window.SelectRuntimeTargetForTests(Target(host));
+                    var draft = window.Inputs;
+                    draft.title = "Typing a new message";
+                    window.Inputs = draft;
+                    Assert.That(view.PresentationChanges, Is.Zero);
+                    draft.presentation.maxVisible = 2;
+                    window.Inputs = draft;
+                    Assert.That(view.PresentationChanges, Is.EqualTo(1));
+                    Assert.That(view.Presentation.maxVisible, Is.EqualTo(2));
+                    window.SelectRuntimeTargetForTests(null);
+                    window.Inputs = original;
+                }
+                finally { UnityEngine.Object.DestroyImmediate(window); }
             }
         }
 
