@@ -7,6 +7,9 @@ namespace Deucarian.Notifications.Editor
     [CustomEditor(typeof(NotificationViewStyle))]
     public sealed class DeucarianNotificationViewStyleEditor : UnityEditor.Editor
     {
+        public override UnityEngine.UIElements.VisualElement CreateInspectorGUI() =>
+            DeucarianEditorInspector.Create(OnInspectorGUI);
+
         public override void OnInspectorGUI()
         {
             DeucarianEditorChrome.DrawPackageHeader(

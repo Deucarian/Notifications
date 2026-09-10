@@ -18,7 +18,7 @@ namespace Deucarian.Notifications.Editor
             ToolRegistration = DeucarianToolRegistry.Register(new DeucarianToolDescriptor(
                 ToolId, "Notification Lab", "Add test warnings to your running app or preview messages without hardware.",
                 DeucarianControlCenterArea.Experience, DeucarianNotificationLabWindow.OpenWindow, PackageId,
-                searchTerms: new[] { "notification", "warning", "message", "test", "preview", "audio", "runtime", "play mode" }, order: 140));
+                searchTerms: new[] { "notification", "warning", "message", "test", "preview", "audio", "runtime", "play mode" }, order: 140, createPage: DeucarianNotificationLabWindow.CreatePage, navigationPath: "Notifications"));
             CardRegistration = DeucarianControlCenterRegistry.RegisterCardProvider(new CardProvider());
         }
 
@@ -33,7 +33,7 @@ namespace Deucarian.Notifications.Editor
                         "Notifications", "Test messages in the editor or inject them into a running application's warning list.",
                         PackageId, DeucarianControlCenterStatus.Success, "Ready to test", order: 140,
                         actions: new[] { new DeucarianControlCenterAction(ToolId, "Open Notification Lab",
-                            DeucarianNotificationLabWindow.OpenWindow) },
+                            DeucarianNotificationLabWindow.OpenWindow, navigationToolId: "deucarian.notifications.lab") },
                         searchTerms: new[] { "notification", "warning", "test", "preview" })
                 };
             }

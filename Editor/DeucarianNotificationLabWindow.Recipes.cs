@@ -8,16 +8,7 @@ namespace Deucarian.Notifications.Editor
     public sealed partial class DeucarianNotificationLabWindow
     {
         [SerializeField] private NotificationLabRecipePanel recipePanel = new NotificationLabRecipePanel();
-
-        private void DrawRecipeControls()
-        {
-            recipePanel.Draw(CaptureDraft, ApplyDraft, kind =>
-            {
-                lifetimeKind = kind;
-                if (kind == NotificationLifetimeKind.Timed) lifetimeSeconds = 5;
-                AddCustom();
-            }, ShowMixed);
-        }
+        internal NotificationLabRecipePanel Recipes => recipePanel;
 
         private NotificationLabRecipeData CaptureDraft() => new NotificationLabRecipeData
         {
@@ -30,6 +21,8 @@ namespace Deucarian.Notifications.Editor
         private void ApplyDraft(NotificationLabRecipeData value)
         {
             if (value == null) return;
+            var nextPresentation = value.presentation.Sanitized();
+            bool presentationChanged = !presentationSettings.Equals(nextPresentation);
             messageTitle = value.title ?? "Example warning";
             messageBody = value.body ?? "";
             severity = value.severity;
@@ -37,13 +30,13 @@ namespace Deucarian.Notifications.Editor
             lifetimeSeconds = Mathf.Max(0.1f, SanitizeDelay(value.lifetimeSeconds));
             activationDelay = SanitizeDelay(value.activationDelay);
             recoveryDelay = SanitizeDelay(value.recoveryDelay);
-            presentationSettings = value.presentation.Sanitized();
+            presentationSettings = nextPresentation;
             experience = value.experience;
             soundEnabled = value.sound;
             paletteSet = string.IsNullOrEmpty(value.paletteGuid) ? null :
                 AssetDatabase.LoadAssetAtPath<DeucarianAudioPaletteSet>(AssetDatabase.GUIDToAssetPath(value.paletteGuid));
             audio?.Configure(paletteSet, experience, soundEnabled && runtimeConnection == null);
-            runtimeConnection?.ConfigurePresentation(presentationSettings);
+            if (presentationChanged) runtimeConnection?.ConfigurePresentation(presentationSettings);
         }
 
         private void SaveDraft() => NotificationLabRecipeStorage.SaveDraft(CaptureDraft());
