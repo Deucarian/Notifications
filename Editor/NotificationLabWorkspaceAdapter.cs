@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Deucarian.Editor;
 using Deucarian.Notifications.Unity;
 using Deucarian.Theming;
+using Deucarian.Theming.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -19,6 +20,7 @@ namespace Deucarian.Notifications.Editor
         private int nextTargetId;
         private bool refreshing;
         private bool disposed;
+        private DeucarianThemingEditorFeatureGate audioGate;
 
         internal NotificationLabWorkspaceAdapter(VisualElement root, DeucarianNotificationLabWindow host)
         {
@@ -71,7 +73,7 @@ namespace Deucarian.Notifications.Editor
         private void BindAppearance()
         {
             var form = view.Appearance.Section("Appearance and motion");
-            form.Integer("lab-maximum", "Maximum visible", () => host.Inputs.presentation.maxVisible,
+            form.IntegerSlider("lab-maximum", "Maximum visible", 1, 20, () => host.Inputs.presentation.maxVisible,
                 value => Change(x => x.presentation.maxVisible = Mathf.Clamp(value, 1, 20)));
             string[] transitions = Enum.GetNames(typeof(NotificationTransition));
             form.Choice("lab-show", "Show transition", transitions, () => (int)host.Inputs.presentation.show,
@@ -110,6 +112,10 @@ namespace Deucarian.Notifications.Editor
             form.Action("lab-stop-audio", "Stop sound", host.StopAudio);
             form.Note(() => host.AudioStatus);
             form.EnabledWhen(() => host.Session != null && host.Connection == null);
+            var controls = new VisualElement();
+            while (view.Audio.Root.childCount > 0) controls.Add(view.Audio.Root[0]);
+            audioGate = new DeucarianThemingEditorFeatureGate(controls, true, host.StopAudio);
+            view.Audio.Root.Add(audioGate.Root);
         }
 
         internal void Refresh()
@@ -128,6 +134,7 @@ namespace Deucarian.Notifications.Editor
                 foreach (var item in host.Snapshot.Items) if (!visibleIds.Contains(item.Id)) hidden.Add(Row(item));
                 view.SetMessages(visible, hidden, host.Session?.PendingCount ?? 0);
                 view.RefreshForms();
+                audioGate.Refresh();
                 view.Workspace.FooterLeading.text = host.Session == null ? "Session restarting…"
                     : (host.Connection == null ? "Editor preview" : "Connected · lab messages only") + " · " + host.Session.PingCount + " ping requests";
                 view.Workspace.FooterTrailing.text = "Maximum " + settings.maxVisible + " · " + settings.show + " / " + settings.hide + " · Lazy follow " + (settings.lazyFollow ? "on" : "off");
@@ -183,6 +190,6 @@ namespace Deucarian.Notifications.Editor
                 "Resolve", () => { host.Session?.Resolve(item.Id); Refresh(); }, !recovering);
         }
 
-        public void Dispose() { if (disposed) return; disposed = true; view.Dispose(); targets.Clear(); targetIds.Clear(); }
+        public void Dispose() { if (disposed) return; disposed = true; audioGate?.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
     }
 }

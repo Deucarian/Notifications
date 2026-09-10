@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4] - 2026-09-10
+
+- Use shared sliders for message capacity and the shared audio-disabled state. Keep message injection, lifetime, motion and lazy follow independent of visual palette adoption.
+
 ## [0.3.3] - 2026-09-09
 
 ### Changed

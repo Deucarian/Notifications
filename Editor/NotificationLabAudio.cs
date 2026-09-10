@@ -40,6 +40,12 @@ namespace Deucarian.Notifications.Editor
         public bool TryRequestFeedback(NotificationFeedbackRequest request)
         {
             if (disposed) return false;
+            if (!DeucarianThemeRuntimeResolver.UseAudio)
+            {
+                Stop();
+                Status = "Audio is off in Project setup. Ping requests are still counted.";
+                return false;
+            }
             if (!Enabled) { Status = "Muted ping request."; return false; }
             if (PaletteSet == null || !PaletteSet.TryResolveById(request.RoleId, Experience, out var resolution))
             {
