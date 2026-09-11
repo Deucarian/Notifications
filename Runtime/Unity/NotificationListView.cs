@@ -27,12 +27,14 @@ namespace Deucarian.Notifications.Unity
         private NotificationSnapshot snapshot = NotificationSnapshot.Empty;
         private NotificationSnapshot selected = NotificationSnapshot.Empty;
         private TMP_Text overflow;
+        private bool reconciling;
         private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
 
         public int VisibleCount => selected.Count;
         public int OverflowCount => Math.Max(0, snapshot.Count - selected.Count);
         public int RenderedRowCount => slots.Count;
         public NotificationPresentationSettings Presentation => presentation.Sanitized();
+        public NotificationRowView RowTemplate => rowPrefab;
         public bool SupportsLazyFollow
         {
             get
@@ -74,6 +76,14 @@ namespace Deucarian.Notifications.Unity
 
         private void Reconcile()
         {
+            reconciling = true;
+            try { ReconcileRows(); }
+            finally { reconciling = false; }
+            Layout();
+        }
+
+        private void ReconcileRows()
+        {
             bool animate = Application.isPlaying && isActiveAndEnabled;
             for (int i = slots.Count - 1; i >= 0; i--)
             {
@@ -87,16 +97,21 @@ namespace Deucarian.Notifications.Unity
             {
                 if (slots.Count >= Presentation.maxVisible) break;
                 if (slots.Exists(x => x.Row.NotificationId == item.Id)) continue;
-                NotificationRowView row = pool.Count > 0 ? pool.Pop() : Instantiate(rowPrefab, container, false);
+                NotificationRowView row;
+                if (pool.Count > 0) row = pool.Pop();
+                else
+                {
+                    row = Instantiate(rowPrefab, container, false);
+                    row.CopyAuthoredBaselineFrom(rowPrefab);
+                }
                 row.gameObject.SetActive(true);
                 row.name = "Notification " + item.Id.Value;
                 row.Render(item);
                 var motion = new NotificationRowMotion(row);
                 slots.Add(new Slot { Row = row, Motion = motion });
-                row.AppearanceChanged += RefreshOverflowColor;
+                row.AppearanceChanged += Layout;
                 motion.SetVisible(true, Presentation, animate);
             }
-            Layout();
         }
 
         private void Update()
@@ -113,7 +128,7 @@ namespace Deucarian.Notifications.Unity
         private void Retire(int index)
         {
             NotificationRowView row = slots[index].Row;
-            row.AppearanceChanged -= RefreshOverflowColor;
+            row.AppearanceChanged -= Layout;
             row.gameObject.SetActive(false);
             pool.Push(row);
             slots.RemoveAt(index);
@@ -137,14 +152,14 @@ namespace Deucarian.Notifications.Unity
 
         private void Layout()
         {
+            if (reconciling) return;
             slots.Sort((a, b) => Rank(a.Row.NotificationId).CompareTo(Rank(b.Row.NotificationId)));
             float width = ((RectTransform)rowPrefab.transform).sizeDelta.x;
-            float height = ((RectTransform)rowPrefab.transform).sizeDelta.y;
-            if (rowPrefab.TryGetComponent<LayoutElement>(out var element) && element.preferredHeight > 0) height = element.preferredHeight;
             float y = 0;
             for (int i = 0; i < slots.Count; i++)
             {
                 Slot slot = slots[i];
+                float height = slot.Row.PreferredHeight;
                 var rect = (RectTransform)slot.Row.transform;
                 rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
                 rect.sizeDelta = new Vector2(width, height);

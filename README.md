@@ -2,6 +2,21 @@
 
 For simple calls and setup, see [Simple usage](Documentation~/SimpleUsage.md).
 
+## One final preview
+
+Test and Appearance share one live message list. Changing tabs preserves the
+messages, timers, overflow, theme and transition progress. Adjust the visible
+limit, entrance/exit method or duration in Appearance, then return to Test to
+add or resolve messages using those exact settings. Replay entrance changes
+only the animation, never the notification lifetime.
+
+When project Visual styling is enabled, runtime rows and the editor preview
+resolve colors from Theming. Disabling it restores authored runtime row colors
+and typography. The editor-only sandbox uses the package's default row style;
+a connected runtime list uses its theme override/provider and view-style roles.
+Lazy follow still requires a running XR/camera-space list and never moves an
+editor scene camera. Requires Editor 1.11.0 and Theming 1.7.0.
+
 ## In-window navigation
 
 The left sidebar changes pages in the current window, keeping each page's draft and session alive. Right-click a sidebar item and choose **Open in new window** for an independent workspace. Closing a workspace releases its pages; ordinary page changes do not reset lab messages or stop package operations.
@@ -147,6 +162,18 @@ The core only emits a semantic role ID through `INotificationFeedbackSink`.
 Missing audio is always a safe no-op and never affects visual state.
 
 ## Presentation
+
+The bundled uGUI prefab uses Theming's licensed Inter font and atlas material;
+it does not reference a font from HoloHelmet or another application. Import
+Unity's **TMP Essential Resources** in the consuming project (Window > TextMeshPro
+> Import TMP Essential Resources) for TMP's required shaders and settings. Unity 6
+ships this official resource archive with uGUI; older Unity versions ship it with
+TextMeshPro. A package font does not replace this Unity prerequisite.
+
+Notification rows preserve their authored padding and expand their line slots
+and list height for larger themed typography. The selected font size is not
+silently reduced. Title and instruction stay separate, including when rows are
+reused or typography changes live. Custom non-stacked row layouts remain authored.
 
 `NotificationPresenter` is engine-independent. `NotificationListView` and
 `NotificationRowView` provide the uGUI implementation. Late/recreated views
