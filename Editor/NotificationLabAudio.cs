@@ -38,6 +38,11 @@ namespace Deucarian.Notifications.Editor
         }
 
         public bool TryRequestFeedback(NotificationFeedbackRequest request)
+            => TryPlay(request, false);
+
+        internal bool TryPreviewFeedback(NotificationFeedbackRequest request) => TryPlay(request, true);
+
+        private bool TryPlay(NotificationFeedbackRequest request, bool explicitPreview)
         {
             if (disposed) return false;
             if (!DeucarianThemeRuntimeResolver.UseAudio)
@@ -46,7 +51,7 @@ namespace Deucarian.Notifications.Editor
                 Status = "Audio is off in Project setup. Ping requests are still counted.";
                 return false;
             }
-            if (!Enabled) { Status = "Muted ping request."; return false; }
+            if (!Enabled && !explicitPreview) { Status = "Muted ping request."; return false; }
             if (PaletteSet == null || !PaletteSet.TryResolveById(request.RoleId, Experience, out var resolution))
             {
                 Status = "No cue found. Choose a palette set containing the feedback role.";

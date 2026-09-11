@@ -20,7 +20,8 @@ namespace Deucarian.Notifications.Editor
         private int nextTargetId;
         private bool refreshing;
         private bool disposed;
-        private DeucarianThemingEditorFeatureGate audioGate;
+        private NotificationLabAudioPanel audioPanel;
+        private readonly NotificationLabMotionPreview motion = new NotificationLabMotionPreview();
 
         internal NotificationLabWorkspaceAdapter(VisualElement root, DeucarianNotificationLabWindow host)
         {
@@ -32,6 +33,17 @@ namespace Deucarian.Notifications.Editor
             BindComposer();
             BindAppearance();
             BindAudio();
+            view.MotionPreviewRoot.Add(motion);
+            view.TabChanged += index => { if (index != 1) motion.Stop(); };
+            for (int i = 0; i < 3; i++)
+            {
+                DeucarianEditorMessageRow row = null;
+                row = new DeucarianEditorMessageRow("This is a notification", null, DeucarianEditorStatus.Warning, null,
+                    "Dismiss", () => DeucarianEditorWorkspaceControls.Show(row, false));
+                var dismiss = row.Q<Button>();
+                dismiss.text = "×"; dismiss.tooltip = "Dismiss this preview message";
+                motion.Specimen.Add(row);
+            }
         }
 
         private void Change(Action<NotificationLabRecipeData> update)
@@ -45,15 +57,17 @@ namespace Deucarian.Notifications.Editor
         {
             var form = view.Composer;
             form.Choice("lab-type", "Type", Enum.GetNames(typeof(NotificationSeverity)), () => (int)host.Inputs.severity,
-                value => Change(x => x.severity = (NotificationSeverity)value));
+                value => Change(x => x.severity = (NotificationSeverity)value), new[] {
+                    DeucarianEditorIconIds.Info, DeucarianEditorIconIds.Success, DeucarianEditorIconIds.Warning, DeucarianEditorIconIds.Error });
             form.Text("lab-title", "Title", () => host.Inputs.title, value => Change(x => x.title = value));
             form.Text("lab-body", "Message", () => host.Inputs.body, value => Change(x => x.body = value), true);
-            form.Segments("lab-dismissal", "Dismissal", new[] { "Resolve manually", "After a delay" }, () => (int)host.Inputs.lifetime,
+            form.Choice("lab-dismissal", "Dismissal", new[] { "Until resolved", "After a delay" }, () => (int)host.Inputs.lifetime,
                 value => Change(x => x.lifetime = (NotificationLifetimeKind)value));
             var seconds = form.Number("lab-duration", "Seconds", () => host.Inputs.lifetimeSeconds, value => Change(x => x.lifetimeSeconds = value));
             form.VisibleWhen(seconds, () => host.Inputs.lifetime == NotificationLifetimeKind.Timed);
-            form.Action("lab-add", "Add test message", host.AddCustom, () => host.Session != null && !string.IsNullOrWhiteSpace(host.Inputs.title), true);
-            var scenarios = form.Section("Test scenarios", true);
+            form.Action("lab-add", "Add message", host.AddCustom, () => host.Session != null && !string.IsNullOrWhiteSpace(host.Inputs.title), true);
+            var advanced = form.Section("More options", true);
+            var scenarios = advanced.Section("Test scenarios", true);
             scenarios.Action("lab-timed", "Timed notice · 5 seconds", () => { Change(x => { x.lifetime = NotificationLifetimeKind.Timed; x.lifetimeSeconds = 5; }); host.AddCustom(); });
             scenarios.Action("lab-persistent", "Persistent warning · resolve manually", () => { Change(x => x.lifetime = NotificationLifetimeKind.UntilResolved); host.AddCustom(); });
             scenarios.Action("lab-three", "Show three at once", host.ShowThree);
@@ -65,58 +79,46 @@ namespace Deucarian.Notifications.Editor
             scenarios.Number("lab-show-delay", "Show delay", () => host.Inputs.activationDelay, value => Change(x => x.activationDelay = value));
             scenarios.Number("lab-recovery-delay", "Recovery delay", () => host.Inputs.recoveryDelay, value => Change(x => x.recoveryDelay = value));
             scenarios.Note(() => "Repeated active messages share one row. A simultaneous batch requests one ping. Delays are in seconds.");
-            host.Recipes.Bind(form.Section("Test recipes", true), () => host.Inputs, value => host.Inputs = value);
-            form.Note(() => "Test messages are temporary. Clearing or disconnecting removes only this lab's messages.");
+            host.Recipes.Bind(advanced.Section("Test recipes", true), () => host.Inputs, value => host.Inputs = value);
+            advanced.Note(() => "Test messages are temporary. Clearing or disconnecting removes only this lab's messages.");
             form.EnabledWhen(() => host.Session != null);
         }
 
         private void BindAppearance()
         {
-            var form = view.Appearance.Section("Appearance and motion");
-            form.IntegerSlider("lab-maximum", "Maximum visible", 1, 20, () => host.Inputs.presentation.maxVisible,
+            var form = view.Appearance;
+            form.Stepper("lab-maximum", "Visible messages", 1, 20, () => host.Inputs.presentation.maxVisible,
                 value => Change(x => x.presentation.maxVisible = Mathf.Clamp(value, 1, 20)));
+            var overflow = form.Choice("lab-overflow-policy", "Overflow", new[] { "Queue" }, () => 0, _ => { });
+            overflow.SetEnabled(false);
+            overflow.tooltip = "Overflow remains active. Timed messages expire from activation; persistent messages wait for resolution.";
             string[] transitions = Enum.GetNames(typeof(NotificationTransition));
-            form.Choice("lab-show", "Show transition", transitions, () => (int)host.Inputs.presentation.show,
+            form.Choice("lab-show", "Enter", transitions, () => (int)host.Inputs.presentation.show,
                 value => Change(x => x.presentation.show = (NotificationTransition)value));
-            form.Choice("lab-hide", "Hide transition", transitions, () => (int)host.Inputs.presentation.hide,
+            form.Choice("lab-hide", "Exit", transitions, () => (int)host.Inputs.presentation.hide,
                 value => Change(x => x.presentation.hide = (NotificationTransition)value));
-            form.Number("lab-show-seconds", "Show seconds", () => host.Inputs.presentation.showSeconds, value => Change(x => x.presentation.showSeconds = value));
-            form.Number("lab-hide-seconds", "Hide seconds", () => host.Inputs.presentation.hideSeconds, value => Change(x => x.presentation.hideSeconds = value));
+            form.Slider("lab-show-seconds", "Duration", 0, 2, () => host.Inputs.presentation.showSeconds,
+                value => Change(x => { x.presentation.showSeconds = value; x.presentation.hideSeconds = value; }));
             form.Toggle("lab-follow", "Lazy follow", () => host.Inputs.presentation.lazyFollow, value => Change(x => x.presentation.lazyFollow = value));
-            var tuning = form.Section("Follow tuning", true);
+            var advanced = form.Section("Advanced positioning", true);
+            advanced.Root.AddToClassList("dw-foldout-panel");
+            advanced.Slider("lab-hide-seconds", "Exit duration", 0, 2, () => host.Inputs.presentation.hideSeconds, value => Change(x => x.presentation.hideSeconds = value));
+            var tuning = advanced.Section("Follow tuning", true);
             tuning.Number("lab-follow-position", "Movement dead zone", () => host.Inputs.presentation.follow.positionDeadZone, value => Change(x => x.presentation.follow.positionDeadZone = value));
             tuning.Number("lab-follow-rotation", "Rotation dead zone", () => host.Inputs.presentation.follow.rotationDeadZone, value => Change(x => x.presentation.follow.rotationDeadZone = value));
             tuning.Number("lab-follow-seconds", "Response seconds", () => host.Inputs.presentation.follow.smoothingSeconds, value => Change(x => x.presentation.follow.smoothingSeconds = value));
             tuning.Action("lab-reset-follow", "Reset follow tuning", () => Change(x => x.presentation.follow = Deucarian.UI.DeucarianLazyFollowSettings.Default));
             tuning.EnabledWhen(() => host.Inputs.presentation.lazyFollow);
-            form.Note(() => host.Connection == null
+            advanced.Note(() => host.Connection == null
                 ? "The editor previews content, limits and timing. Connect a running list to see its theme, transitions and lazy follow. No camera is created or moved."
                 : host.Connection.SupportsPresentation
                     ? "Live overrides affect this list only and are restored on disconnect. Colours and typography follow the application's theme."
                     : "This custom view does not expose presentation settings; its host controls layout and motion.");
-            form.Note(() => "Overflow stays active. Timed messages expire from activation, including in overflow; persistent messages wait for resolution.");
+            advanced.Note(() => "Overflow stays active. Timed messages expire from activation, including in overflow; persistent messages wait for resolution.");
             form.EnabledWhen(() => host.Session != null && (host.Connection == null || host.Connection.SupportsPresentation));
         }
 
-        private void BindAudio()
-        {
-            view.Audio.Note(() => host.Connection == null ? "Audition your palette's notification cues in the editor."
-                : "Runtime audio uses the application's palette, volume and pitch. Editor audition is disabled to avoid a second ping.");
-            var form = view.Audio.Section("Audio feedback");
-            form.Asset("lab-palette", "Palette Set", typeof(DeucarianAudioPaletteSet), () => host.Palette, value => host.Palette = (DeucarianAudioPaletteSet)value);
-            form.Choice("lab-experience", "Experience", Enum.GetNames(typeof(DeucarianAudioExperience)), () => (int)host.Inputs.experience,
-                value => Change(x => x.experience = (DeucarianAudioExperience)value));
-            form.Toggle("lab-sound", "Sound on new messages", () => host.Inputs.sound, value => Change(x => x.sound = value));
-            form.Action("lab-selected-palette", "Use selected palette", host.AdoptPaletteSelection);
-            form.Action("lab-open-audio", "Open Audio Palette Lab", host.OpenAudioLab, () => host.Palette != null);
-            form.Action("lab-stop-audio", "Stop sound", host.StopAudio);
-            form.Note(() => host.AudioStatus);
-            form.EnabledWhen(() => host.Session != null && host.Connection == null);
-            var controls = new VisualElement();
-            while (view.Audio.Root.childCount > 0) controls.Add(view.Audio.Root[0]);
-            audioGate = new DeucarianThemingEditorFeatureGate(controls, true, host.StopAudio);
-            view.Audio.Root.Add(audioGate.Root);
-        }
+        private void BindAudio() => audioPanel = new NotificationLabAudioPanel(view.Audio.Root, host);
 
         internal void Refresh()
         {
@@ -134,7 +136,11 @@ namespace Deucarian.Notifications.Editor
                 foreach (var item in host.Snapshot.Items) if (!visibleIds.Contains(item.Id)) hidden.Add(Row(item));
                 view.SetMessages(visible, hidden, host.Session?.PendingCount ?? 0);
                 view.RefreshForms();
-                audioGate.Refresh();
+                audioPanel.Refresh();
+                motion.Enter = settings.show;
+                motion.Exit = settings.hide;
+                motion.EnterSeconds = settings.showSeconds;
+                motion.ExitSeconds = settings.hideSeconds;
                 view.Workspace.FooterLeading.text = host.Session == null ? "Session restarting…"
                     : (host.Connection == null ? "Editor preview" : "Connected · lab messages only") + " · " + host.Session.PingCount + " ping requests";
                 view.Workspace.FooterTrailing.text = "Maximum " + settings.maxVisible + " · " + settings.show + " / " + settings.hide + " · Lazy follow " + (settings.lazyFollow ? "on" : "off");
@@ -181,15 +187,15 @@ namespace Deucarian.Notifications.Editor
             bool timed = item.Definition.Lifetime.Kind == NotificationLifetimeKind.Timed;
             bool recovering = host.Session?.IsRecovering(item.Id) == true;
             double remaining = Math.Max(0, item.Definition.Lifetime.Seconds - (EditorApplication.timeSinceStartup - item.ActivatedAtSeconds));
-            string state = recovering ? "Recovering…" : timed ? "Expires in " + remaining.ToString("0.0") + " s" : "Until resolved";
+            string state = recovering ? "Recovering…" : timed ? "Expires in " + remaining.ToString("0.0") + " s" : "";
             var status = item.Definition.Severity == NotificationSeverity.Error ? DeucarianEditorStatus.Error :
                 item.Definition.Severity == NotificationSeverity.Warning ? DeucarianEditorStatus.Warning :
                 item.Definition.Severity == NotificationSeverity.Success ? DeucarianEditorStatus.Success : DeucarianEditorStatus.Info;
             return new DeucarianEditorMessageData(item.Id.Value, item.Definition.Title, item.Definition.Body, status, state,
                 timed ? (float?)(remaining / item.Definition.Lifetime.Seconds) : null,
-                "Resolve", () => { host.Session?.Resolve(item.Id); Refresh(); }, !recovering);
+                timed ? null : "Resolve", timed ? (Action)null : () => { host.Session?.Resolve(item.Id); Refresh(); }, !recovering);
         }
 
-        public void Dispose() { if (disposed) return; disposed = true; audioGate?.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
+        public void Dispose() { if (disposed) return; disposed = true; audioPanel?.Dispose(); motion.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
     }
 }

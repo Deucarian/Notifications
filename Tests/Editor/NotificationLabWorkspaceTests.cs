@@ -30,7 +30,7 @@ namespace Deucarian.Notifications.Tests
                 Assert.That(window.SessionForTests.Store.Snapshot.Count, Is.EqualTo(1));
                 Assert.That(window.SessionForTests.Store.Snapshot[0].Definition.Title, Is.EqualTo("Connected UI test"));
                 Assert.That(root.Q("lab-visible-rows").childCount, Is.EqualTo(1));
-                root.Q<SliderInt>("lab-maximum").value = 2;
+                root.Q<DeucarianEditorStepper>("lab-maximum").value = 2;
                 window.ShowMixed();
                 window.TickForTests();
                 Assert.That(window.Inputs.presentation.maxVisible, Is.EqualTo(2));
@@ -45,7 +45,7 @@ namespace Deucarian.Notifications.Tests
                 Assert.That(window.SessionForTests.PingCount, Is.Zero);
                 yield return Click(root.Q("workspace-tabs").Q<Button>("choice-1"));
                 yield return null;
-                var maximum = root.Q<SliderInt>("lab-maximum");
+                var maximum = root.Q<DeucarianEditorStepper>("lab-maximum");
                 Assert.That(maximum.parent.Q<Label>().worldBound.xMax, Is.LessThanOrEqualTo(maximum.worldBound.xMin + 1));
             }
             finally { window.Inputs = original; window.Close(); }
