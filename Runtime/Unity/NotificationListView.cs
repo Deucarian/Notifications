@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Deucarian.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,6 +28,7 @@ namespace Deucarian.Notifications.Unity
         private NotificationSnapshot snapshot = NotificationSnapshot.Empty;
         private NotificationSnapshot selected = NotificationSnapshot.Empty;
         private TMP_Text overflow;
+        private readonly DeucarianLayoutTransition overflowMotion = new DeucarianLayoutTransition();
         private bool reconciling;
         private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
 
@@ -123,6 +125,8 @@ namespace Deucarian.Notifications.Unity
                 if (!slots[i].Motion.IsShowing && slots[i].Motion.IsHidden) { Retire(i); released = true; }
             }
             if (released) Reconcile();
+            overflowMotion.Advance(Time.unscaledDeltaTime);
+            if (overflow != null) overflow.rectTransform.anchoredPosition = overflowMotion.Current;
         }
 
         private void Retire(int index)
@@ -153,7 +157,12 @@ namespace Deucarian.Notifications.Unity
         private void Layout()
         {
             if (reconciling) return;
-            slots.Sort((a, b) => Rank(a.Row.NotificationId).CompareTo(Rank(b.Row.NotificationId)));
+            // An exiting row retains its slot until it is retired; survivors then close the gap.
+            var showing = slots.FindAll(slot => slot.Motion.IsShowing);
+            showing.Sort((a, b) => Rank(a.Row.NotificationId).CompareTo(Rank(b.Row.NotificationId)));
+            int next = 0;
+            for (int i = 0; i < slots.Count; i++) if (slots[i].Motion.IsShowing) slots[i] = showing[next++];
+            bool animate = Application.isPlaying && isActiveAndEnabled;
             float width = ((RectTransform)rowPrefab.transform).sizeDelta.x;
             float y = 0;
             for (int i = 0; i < slots.Count; i++)
@@ -164,7 +173,7 @@ namespace Deucarian.Notifications.Unity
                 rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
                 rect.sizeDelta = new Vector2(width, height);
                 rect.SetSiblingIndex(i);
-                slot.Motion.Position(new Vector2(0, -y));
+                slot.Motion.Position(new Vector2(0, -y), Presentation.ReflowDuration, animate);
                 y += height + spacing;
             }
             if (overflow != null)
@@ -174,7 +183,8 @@ namespace Deucarian.Notifications.Unity
                 var rect = (RectTransform)overflow.transform;
                 rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
                 rect.sizeDelta = new Vector2(width, 32);
-                rect.anchoredPosition = new Vector2(0, -y);
+                overflowMotion.MoveTo(new Vector2(0, -y), Presentation.ReflowDuration, animate);
+                rect.anchoredPosition = overflowMotion.Current;
                 RefreshOverflowColor();
             }
             container.sizeDelta = new Vector2(width, Mathf.Max(0, y - spacing) + (OverflowCount > 0 ? 32 + spacing : 0));
@@ -208,7 +218,8 @@ namespace Deucarian.Notifications.Unity
                     (safe.yMin + safe.height * normalizedY) / Screen.height);
             }
             container.anchorMin = container.anchorMax = anchor;
-            container.pivot = new Vector2(0, 0.5f);
+            // Keep the first row at the configured screen anchor when the list grows or shrinks.
+            container.pivot = new Vector2(0, 1);
             container.anchoredPosition = Vector2.zero;
         }
 
@@ -216,6 +227,7 @@ namespace Deucarian.Notifications.Unity
         {
             followMotion.Restore(transform);
             foreach (Slot slot in slots) slot.Motion.Complete();
+            overflowMotion.Complete();
         }
         private void LateUpdate() => followMotion.Advance(transform,
             Presentation.lazyFollow && SupportsLazyFollow, Presentation.follow, Time.unscaledDeltaTime);

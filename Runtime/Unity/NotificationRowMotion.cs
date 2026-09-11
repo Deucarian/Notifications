@@ -1,3 +1,4 @@
+using Deucarian.UI;
 using UnityEngine;
 
 namespace Deucarian.Notifications.Unity
@@ -8,7 +9,7 @@ namespace Deucarian.Notifications.Unity
         private readonly NotificationRowTransition transition = new NotificationRowTransition();
         private readonly RectTransform rect;
         private readonly CanvasGroup group;
-        private Vector2 position;
+        private readonly DeucarianLayoutTransition layout = new DeucarianLayoutTransition();
 
         public NotificationRowMotion(NotificationRowView row)
         {
@@ -31,18 +32,19 @@ namespace Deucarian.Notifications.Unity
         public void Advance(float seconds)
         {
             transition.Advance(seconds);
+            layout.Advance(seconds);
             Apply();
         }
 
-        public void Position(Vector2 value) { position = value; Apply(); }
-        public void Complete() { transition.Complete(); Apply(); }
+        public void Position(Vector2 value, float seconds, bool animate) { layout.MoveTo(value, seconds, animate); Apply(); }
+        public void Complete() { transition.Complete(); layout.Complete(); Apply(); }
 
         private void Apply()
         {
             if (rect == null || group == null) return;
             group.alpha = transition.Alpha;
             rect.localScale = Vector3.one * transition.Scale;
-            rect.anchoredPosition = position + transition.Offset;
+            rect.anchoredPosition = layout.Current + transition.Offset;
         }
     }
 }

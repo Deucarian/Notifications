@@ -87,7 +87,8 @@ namespace Deucarian.Notifications.Editor
             var overflow = form.Choice("lab-overflow-policy", "Overflow", new[] { "Queue" }, () => 0, _ => { });
             overflow.SetEnabled(false);
             overflow.tooltip = "Overflow remains active. Timed messages expire from activation; persistent messages wait for resolution.";
-            string[] transitions = Enum.GetNames(typeof(NotificationTransition));
+            string[] transitions = { "None", "Fade", "Scale", "Slide", "Fade + Scale",
+                "Fade + Slide", "Scale + Slide", "Fade + Scale + Slide" };
             form.Choice("lab-show", "Enter", transitions, () => (int)host.Inputs.presentation.show,
                 value => Change(x => x.presentation.show = (NotificationTransition)value));
             form.Choice("lab-hide", "Exit", transitions, () => (int)host.Inputs.presentation.hide,
@@ -95,9 +96,14 @@ namespace Deucarian.Notifications.Editor
             form.Slider("lab-show-seconds", "Duration", 0, 2, () => host.Inputs.presentation.showSeconds,
                 value => Change(x => { x.presentation.showSeconds = value; x.presentation.hideSeconds = value; }));
             form.Toggle("lab-follow", "Lazy follow", () => host.Inputs.presentation.lazyFollow, value => Change(x => x.presentation.lazyFollow = value));
-            var advanced = form.Section("Advanced positioning", true);
+            form.Toggle("lab-reflow", "Animate list changes", () => !host.Inputs.presentation.instantLayout,
+                value => Change(x => x.presentation.instantLayout = !value));
+            var advanced = form.Section("More motion options", true);
             advanced.Root.AddToClassList("dw-foldout-panel");
             advanced.Slider("lab-hide-seconds", "Exit duration", 0, 2, () => host.Inputs.presentation.hideSeconds, value => Change(x => x.presentation.hideSeconds = value));
+            var reflow = advanced.Slider("lab-reflow-seconds", "List movement duration", .05f, 1,
+                () => host.Inputs.presentation.Sanitized().reflowSeconds, value => Change(x => x.presentation.reflowSeconds = value));
+            advanced.VisibleWhen(reflow, () => !host.Inputs.presentation.instantLayout);
             var tuning = advanced.Section("Follow tuning", true);
             tuning.Number("lab-follow-position", "Movement dead zone", () => host.Inputs.presentation.follow.positionDeadZone, value => Change(x => x.presentation.follow.positionDeadZone = value));
             tuning.Number("lab-follow-rotation", "Rotation dead zone", () => host.Inputs.presentation.follow.rotationDeadZone, value => Change(x => x.presentation.follow.rotationDeadZone = value));

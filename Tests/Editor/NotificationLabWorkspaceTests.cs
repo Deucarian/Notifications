@@ -1,6 +1,7 @@
 using System.Collections;
 using Deucarian.Editor;
 using Deucarian.Notifications.Editor;
+using Deucarian.Notifications.Unity;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -46,6 +47,18 @@ namespace Deucarian.Notifications.Tests
                 Assert.That(window.SessionForTests.PingCount, Is.Zero);
                 yield return Click(root.Q("workspace-tabs").Q<Button>("choice-1"));
                 yield return null;
+                var enter = root.Q<PopupField<string>>("lab-show");
+                Assert.That(enter.choices, Does.Contain("Fade + Scale + Slide"));
+                enter.index = 7;
+                Assert.That(window.Inputs.presentation.show, Is.EqualTo(NotificationTransition.FadeScaleAndSlide));
+                var exit = root.Q<PopupField<string>>("lab-hide");
+                exit.index = 4;
+                Assert.That(window.Inputs.presentation.hide, Is.EqualTo(NotificationTransition.FadeAndScale));
+                root.Q<Toggle>("lab-reflow").value = false;
+                Assert.That(window.Inputs.presentation.ReflowDuration, Is.Zero);
+                root.Q<Toggle>("lab-reflow").value = true;
+                root.Q<Slider>("lab-reflow-seconds").value = .4f;
+                Assert.That(window.Inputs.presentation.ReflowDuration, Is.EqualTo(.4f));
                 var maximum = root.Q<DeucarianEditorStepper>("lab-maximum");
                 Assert.That(maximum.parent.Q<Label>().worldBound.xMax, Is.LessThanOrEqualTo(maximum.worldBound.xMin + 1));
             }

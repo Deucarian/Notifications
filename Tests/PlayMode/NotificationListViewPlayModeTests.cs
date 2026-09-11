@@ -114,6 +114,7 @@ namespace Deucarian.Notifications.PlayModeTests
                 }
                 var settings = NotificationPresentationSettings.Default;
                 settings.show = settings.hide = NotificationTransition.None;
+                settings.instantLayout = true;
                 view.ConfigurePresentation(settings);
                 using (var store = new NotificationStore())
                 using (var presenter = new NotificationPresenter(store, view))
