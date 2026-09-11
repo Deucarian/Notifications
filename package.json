@@ -33,6 +33,11 @@
       "displayName": "Notification List Basics",
       "description": "Compiled example for keyed persistent warnings and semantic feedback.",
       "path": "Samples~/Notification List Basics"
+    },
+    {
+      "displayName": "Simple Usage",
+      "description": "Minimal calls through the configured package host.",
+      "path": "Samples~/SimpleUsage"
     }
   ]
 }

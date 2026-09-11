@@ -1,5 +1,7 @@
 # Deucarian Notifications
 
+For simple calls and setup, see [Simple usage](Documentation~/SimpleUsage.md).
+
 ## One final preview
 
 Test and Appearance share one live message list. Changing tabs preserves the

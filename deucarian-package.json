@@ -13,7 +13,8 @@
     "Deucarian.Notifications.Editor"
   ],
   "sampleAssemblies": [
-    "Deucarian.Notifications.Samples.Basic"
+    "Deucarian.Notifications.Samples.Basic",
+    "Deucarian.Notifications.Samples.SimpleUsage"
   ],
   "testAssemblies": [
     "Deucarian.Notifications.Tests",
