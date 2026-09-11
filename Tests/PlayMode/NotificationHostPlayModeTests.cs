@@ -18,10 +18,10 @@ namespace Deucarian.Notifications.PlayModeTests
             try
             {
                 instance.AddComponent<NotificationHost>();
-                NotificationManager.Warn("connection.lost", "Connection lost", "Please reconnect your device.");
+                NotificationManager.Warn(new NotificationHostPlayModeTestsKey("connection.lost"), "Connection lost", "Please reconnect your device.");
                 yield return null;
                 Assert.That(instance.GetComponent<NotificationListView>().VisibleCount, Is.EqualTo(1));
-                NotificationManager.Resolve("connection.lost");
+                NotificationManager.Resolve(new NotificationHostPlayModeTestsKey("connection.lost"));
                 Assert.That(NotificationManager.Snapshot.Count, Is.Zero);
                 instance.SetActive(false);
                 Assert.That(NotificationManager.IsConfigured, Is.False);

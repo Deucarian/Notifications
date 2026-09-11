@@ -12,16 +12,16 @@ namespace Deucarian.Notifications.Tests
             using (var service = new NotificationService(feedback: feedback))
             using (NotificationManager.Bind(service))
             {
-                NotificationManager.Warn("connection.lost", "Lost", "Reconnect");
+                NotificationManager.Warn(new NotificationServiceTestsKey("connection.lost"), "Lost", "Reconnect");
                 long episode = service.Snapshot[0].Episode;
-                NotificationManager.Warn("connection.lost", "Lost", "Try again");
+                NotificationManager.Warn(new NotificationServiceTestsKey("connection.lost"), "Lost", "Try again");
                 Assert.That(service.Snapshot.Count, Is.EqualTo(1));
                 Assert.That(service.Snapshot[0].Definition.Body, Is.EqualTo("Try again"));
                 Assert.That(feedback.Count, Is.EqualTo(1));
-                NotificationManager.Resolve("connection.lost");
+                NotificationManager.Resolve(new NotificationServiceTestsKey("connection.lost"));
                 service.Tick();
                 Assert.That(service.Snapshot.Count, Is.Zero);
-                NotificationManager.Warn("connection.lost", "Lost", "Reconnect");
+                NotificationManager.Warn(new NotificationServiceTestsKey("connection.lost"), "Lost", "Reconnect");
                 Assert.That(service.Snapshot[0].Episode, Is.GreaterThan(episode));
                 Assert.That(feedback.Count, Is.EqualTo(2));
             }
@@ -43,9 +43,9 @@ namespace Deucarian.Notifications.Tests
                 using (NotificationManager.Bind(service))
                 {
                     registration.Dispose();
-                    NotificationManager.Warn("next", "Hello", "World");
+                    NotificationManager.Warn(new NotificationServiceTestsKey("next"), "Hello", "World");
                 }
-                service.Resolve("next");
+                service.Resolve(new NotificationServiceTestsKey("next"));
                 Assert.That(NotificationManager.IsConfigured, Is.False);
             }
         }

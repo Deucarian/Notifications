@@ -24,8 +24,8 @@ namespace Deucarian.Notifications
         public INotificationSource Source => store;
         public NotificationSnapshot Snapshot => store.Snapshot;
 
-        public void Warn(string id, string title, string message) =>
-            Show(new NotificationDefinition(id, NotificationSeverity.Warning, title, message,
+        public void Warn(NotificationKey key, string title, string message) =>
+            Show(new NotificationDefinition(RequireKey(key), NotificationSeverity.Warning, title, message,
                 feedbackRoleId: "deucarian.feedback.audio.warning"));
 
         public void Show(NotificationDefinition definition)
@@ -34,10 +34,10 @@ namespace Deucarian.Notifications
             episodes.EvaluateBatch(new[] { new NotificationConditionSample(definition, true, default) });
         }
 
-        public void Resolve(string id)
+        public void Resolve(NotificationKey key)
         {
             ThrowIfDisposed();
-            episodes.Resolve(new NotificationId(id));
+            episodes.Resolve(new NotificationId(RequireKey(key)));
         }
 
         public void Tick() { ThrowIfDisposed(); episodes.Tick(); }
@@ -56,5 +56,8 @@ namespace Deucarian.Notifications
         {
             if (disposed) throw new ObjectDisposedException(nameof(NotificationService));
         }
+
+        private static string RequireKey(NotificationKey key) => key != null ? key.Id :
+            throw new ArgumentNullException(nameof(key), "Select a notification key in the Inspector or reuse a named definition from your NotificationKeys class.");
     }
 }

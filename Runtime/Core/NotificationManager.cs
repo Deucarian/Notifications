@@ -9,7 +9,7 @@ namespace Deucarian.Notifications
         public static bool IsConfigured => current != null;
         public static NotificationSnapshot Snapshot => Service.Snapshot;
         private static NotificationService Service => current?.Service ??
-            throw new InvalidOperationException("Configure a NotificationHost before using NotificationManager.");
+            throw new InvalidOperationException("NotificationManager has no configured host. Add an enabled NotificationHost on the notification list prefab in your startup scene, or bind an explicitly owned NotificationService during composition.");
 
         /// <summary>Registers a borrowed service. Disposing the registration never disposes the service.</summary>
         public static IDisposable Bind(NotificationService service)
@@ -19,9 +19,9 @@ namespace Deucarian.Notifications
             return current = new Registration(service);
         }
 
-        public static void Warn(string id, string title, string message) => Service.Warn(id, title, message);
+        public static void Warn(NotificationKey key, string title, string message) => Service.Warn(key, title, message);
         public static void Show(NotificationDefinition definition) => Service.Show(definition);
-        public static void Resolve(string id) => Service.Resolve(id);
+        public static void Resolve(NotificationKey key) => Service.Resolve(key);
 
         private sealed class Registration : IDisposable
         {

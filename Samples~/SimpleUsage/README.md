@@ -8,6 +8,10 @@ For separate notification areas, create a NotificationService per area and pass 
 
 Import the **Simple Usage** sample from Unity Package Manager. Its caller script is:
 
+Definition fields now use named, domain-specific keys. Select an existing definition from the Inspector dropdown or pass the same named key in code. Declare each project key once in a marked key set; ordinary caller methods do not accept raw IDs. Generated keys for asset-authored definitions require no asset reference in the caller. Owner-issued selection and row handles represent runtime instances.
+
+Warn requests warning audio automatically. Repeating an active key updates the warning without replaying its activation sound; resolving and later reactivating it starts a new warning episode. Configure the host audio player or the shared ThemeAudioHost once. Do not add ThemeAudio.Play to each warning call.
+
 ```csharp
 using UnityEngine;
 
@@ -15,8 +19,10 @@ namespace Deucarian.Notifications.Samples.SimpleUsage
 {
     public sealed class SimpleUsageExample : MonoBehaviour
     {
-        public void ShowWarning() => NotificationManager.Warn("connection.lost", "Connection lost", "Please reconnect your device.");
-        public void ResolveWarning() => NotificationManager.Resolve("connection.lost");
+        [SerializeField] private NotificationKey warning = NotificationKeys.ConnectionLost;
+
+        public void ShowWarning() => NotificationManager.Warn(warning, "Connection lost", "Please reconnect your device.");
+        public void ResolveWarning() => NotificationManager.Resolve(warning);
     }
 }
 ```

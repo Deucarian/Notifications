@@ -39,7 +39,7 @@ namespace Deucarian.Notifications.Unity
             public Feedback(NotificationHost host) { this.host = host; }
             public bool TryRequestFeedback(NotificationFeedbackRequest request) =>
                 host.audioPlayer != null ? host.audioPlayer.PlayRoleById(request.RoleId) :
-                ThemeAudio.IsConfigured && ThemeAudio.Play(request.RoleId);
+                ThemeAudio.IsConfigured && ThemeAudio.Player.PlayRoleById(request.RoleId);
         }
     }
 }
