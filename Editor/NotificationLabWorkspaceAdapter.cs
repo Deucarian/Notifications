@@ -21,6 +21,7 @@ namespace Deucarian.Notifications.Editor
         private bool refreshing;
         private bool disposed;
         private NotificationLabAudioPanel audioPanel;
+        private Deucarian.Editor.Definitions.DeucarianDefinitionPanel definitions;
         private readonly NotificationLabRowPreview preview;
 
         internal NotificationLabWorkspaceAdapter(VisualElement root, DeucarianNotificationLabWindow host)
@@ -28,7 +29,9 @@ namespace Deucarian.Notifications.Editor
             this.host = host;
             view = new DeucarianEditorLabWorkspace(root,
                 System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(Application.dataPath)),
-                "Notifications", "Add and resolve messages in the editor or running app.", host.ClearMessages, SelectTarget);
+                "Notifications", "Add and resolve messages in the editor or running app.", host.ClearMessages, SelectTarget, "Definitions");
+            definitions = new Deucarian.Editor.Definitions.DeucarianDefinitionPanel(view.Definitions,
+                new Definitions.NotificationDefinitionSchema(), asset => { host.PreviewSavedDefinition((NotificationDefinitionAsset)asset); view.SelectTab(0); });
             DeucarianEditorWorkspaceNavigation.Populate(view.Workspace, "deucarian.notifications.lab", host.OpenAudioLab);
             BindComposer();
             BindAppearance();
@@ -188,6 +191,6 @@ namespace Deucarian.Notifications.Editor
                 timed ? null : "Resolve", timed ? (Action)null : () => { host.Session?.Resolve(item.Id); Refresh(); }, !recovering);
         }
 
-        public void Dispose() { if (disposed) return; disposed = true; audioPanel?.Dispose(); preview.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
+        public void Dispose() { if (disposed) return; disposed = true; definitions?.Dispose(); audioPanel?.Dispose(); preview.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
     }
 }

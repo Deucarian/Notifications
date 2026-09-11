@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73e0cc42114e85c43abb8d2c912dde0d, type: 3}
+  m_Name: UI Pressed
+  m_EditorClassIdentifier: Deucarian.Theming::Deucarian.Theming.DeucarianColorRole
+  id: deucarian.ui.pressed
+  displayName: UI Pressed
+  category: UI State
+  description: Pressed selectable UI state.
+  defaultColor: {r: 0.5294118, g: 0.7411765, b: 0.84313726, a: 1}
+  hasPairedDefaultColors: 1
+  lightDefaultColor: {r: 0.09019608, g: 0.2627451, b: 0.40392157, a: 1}
+  darkDefaultColor: {r: 0.5294118, g: 0.7411765, b: 0.84313726, a: 1}
+  isCoreRole: 1

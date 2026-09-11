@@ -1,5 +1,32 @@
 # Deucarian Notifications
 
+## Typed definition workflow
+
+Create or edit the notification in Definitions or the Notification Lab. Its title, message and audio policy are reused here.
+
+Start with the [Definition Workflow walkthrough](Documentation~/DefinitionWorkflow.md).
+Import **Definition Workflow** in Package Manager for a configured sample scene
+and short caller scripts. Definitions can be edited as assets or editable C# declarations; generated keys
+work in code and Inspector dropdowns.
+
+After creating a definition named `ConnectionLost` and configuring the scene
+host, callers only need:
+
+```csharp
+using Deucarian.Notifications;
+using Deucarian.Generated;
+
+NotificationManager.Show(ProjectNotifications.ConnectionLost);
+NotificationManager.Resolve(ProjectNotifications.ConnectionLost);
+```
+
+The definition supplies severity, title, message, lifetime and sound. A
+`NotificationTrigger` exposes the same Show/Resolve operations to Unity events;
+choose its notification from the Inspector dropdown. No caller-owned store or
+presenter is required. Follow the walkthrough below for the one-time host,
+view and audio setup.
+
+
 For simple calls and setup, see [Simple usage](Documentation~/SimpleUsage.md).
 
 ## One final preview
@@ -54,9 +81,10 @@ remain owned by those packages.
 `com.deucarian.notifications` owns reusable keyed notification lifecycle. It
 keeps one authoritative immutable snapshot, applies atomic update batches, and
 requests at most one semantic feedback cue for newly activated items in a
-batch. Application adapters own the conditions and message copy.
+batch. Application adapters own the conditions; reusable notification definitions
+own the default message copy and feedback.
 
-## Runtime example
+## Advanced core composition
 
 ```csharp
 using Deucarian.Notifications;

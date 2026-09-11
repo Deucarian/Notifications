@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7767e1e6ad784996a9e3cc32d69fee54, type: 3}
+  m_Name: DefaultThemeFamily
+  m_EditorClassIdentifier: Deucarian.Theming::Deucarian.Theming.DeucarianThemeFamily
+  familyId: deucarian.theme-family.default
+  displayName: Deucarian Default
+  lightTheme: {fileID: 11400000, guid: 3fa48f869c121ae4d9872123e7d5319e, type: 2}
+  darkTheme: {fileID: 11400000, guid: 6aafbfea9ad7a9b4db7ce5068805e8f7, type: 2}

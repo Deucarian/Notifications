@@ -10,6 +10,7 @@ namespace Deucarian.Notifications.Unity
     {
         [SerializeField] private bool registerAsDefault = true;
         [SerializeField] private DeucarianThemeAudioPlayer audioPlayer;
+        [SerializeField] private NotificationCatalogAsset catalog;
         private IDisposable registration;
         private NotificationService service;
         public NotificationService Service => service ??
@@ -17,8 +18,10 @@ namespace Deucarian.Notifications.Unity
 
         private void OnEnable()
         {
+            if (TMPro.TMP_Settings.instance == null) throw new InvalidOperationException("NotificationHost '" + name + "' needs TextMeshPro settings. Import TMP Essential Resources from Unity's TextMeshPro menu, then enable this host again.");
             service = new NotificationService(new UnityUnscaledNotificationClock(),
-                new Feedback(this), GetComponent<NotificationListView>());
+                new Feedback(this), GetComponent<NotificationListView>(),
+                catalog != null ? catalog : Resources.Load<NotificationCatalogAsset>(NotificationCatalogAsset.DefaultResourcePath));
             try { if (registerAsDefault) registration = NotificationManager.Bind(service); }
             catch { service.Dispose(); service = null; throw; }
         }

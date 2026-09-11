@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0] - 2026-09-11
+
+- Add reusable notification content, severity, lifetime and audio defaults; expose one-line typed Show/Resolve and Inspector triggers in the shared Notification Lab workflow.
+- Include a playable Definition Workflow sample with configured hosts, short callers and usage documentation.
+- Align declared package dependencies with the definition-authoring development wave.
+
+
 ## [0.4.0] - 2026-09-11
 
 - Share one live preview between Test and Appearance, preserving rows, countdowns and selected presentation settings when changing tabs.
