@@ -22,7 +22,7 @@
   "dependencies": {
     "com.deucarian.common": "0.2.1",
     "com.deucarian.diagnostics": "0.1.6",
-    "com.deucarian.editor": "1.10.6",
+    "com.deucarian.editor": "1.10.8",
     "com.deucarian.theming": "1.6.0",
     "com.deucarian.ui": "0.3.0",
     "com.unity.textmeshpro": "3.0.6",
@@ -33,6 +33,11 @@
       "displayName": "Notification List Basics",
       "description": "Compiled example for keyed persistent warnings and semantic feedback.",
       "path": "Samples~/Notification List Basics"
+    },
+    {
+      "displayName": "Simple Usage",
+      "description": "Minimal calls through the configured package host.",
+      "path": "Samples~/SimpleUsage"
     }
   ]
 }

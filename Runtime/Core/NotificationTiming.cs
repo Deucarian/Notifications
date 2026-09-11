@@ -120,6 +120,16 @@ namespace Deucarian.Notifications
 
         public int PendingCount => pendingActivationCount + pendingRecoveryCount;
 
+        /// <summary>Resolves and forgets an individual episode, including a pending activation.</summary>
+        public void Resolve(NotificationId id)
+        {
+            ThrowIfDisposed();
+            if (id.IsEmpty) throw new ArgumentException("A notification ID is required.", nameof(id));
+            states.Remove(id);
+            store.ApplyBatch(new[] { NotificationCommand.Resolve(id) }, clock.NowSeconds);
+            ApplyDueTransitions(clock.NowSeconds);
+        }
+
         public void Reset(bool resolveActive = true)
         {
             ThrowIfDisposed();

@@ -1,5 +1,7 @@
 # Deucarian Notifications
 
+For simple calls and setup, see [Simple usage](Documentation~/SimpleUsage.md).
+
 ## In-window navigation
 
 The left sidebar changes pages in the current window, keeping each page's draft and session alive. Right-click a sidebar item and choose **Open in new window** for an independent workspace. Closing a workspace releases its pages; ordinary page changes do not reset lab messages or stop package operations.
