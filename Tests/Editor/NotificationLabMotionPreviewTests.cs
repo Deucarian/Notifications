@@ -13,6 +13,10 @@ namespace Deucarian.Notifications.Tests
         [TestCase(NotificationTransition.Fade)]
         [TestCase(NotificationTransition.Scale)]
         [TestCase(NotificationTransition.Slide)]
+        [TestCase(NotificationTransition.FadeAndScale)]
+        [TestCase(NotificationTransition.FadeAndSlide)]
+        [TestCase(NotificationTransition.ScaleAndSlide)]
+        [TestCase(NotificationTransition.FadeScaleAndSlide)]
         public void BothTabsShareLiveMotionAndExitSettings(NotificationTransition transition)
         {
             using var view = new DeucarianEditorLabWorkspace(new VisualElement(), "Test", "Notifications", "", () => { }, _ => { });
@@ -83,6 +87,10 @@ namespace Deucarian.Notifications.Tests
         [TestCase(NotificationTransition.Fade)]
         [TestCase(NotificationTransition.Scale)]
         [TestCase(NotificationTransition.Slide)]
+        [TestCase(NotificationTransition.FadeAndScale)]
+        [TestCase(NotificationTransition.FadeAndSlide)]
+        [TestCase(NotificationTransition.ScaleAndSlide)]
+        [TestCase(NotificationTransition.FadeScaleAndSlide)]
         public void ResolvingDuringEntranceReversesFromTheCurrentPosition(NotificationTransition transition)
         {
             using var view = new DeucarianEditorLabWorkspace(new VisualElement(), "Test", "Notifications", "", () => { }, _ => { });
@@ -130,7 +138,8 @@ namespace Deucarian.Notifications.Tests
 
         private static float Progress(DeucarianEditorMessageRow row, NotificationTransition transition) =>
             transition == NotificationTransition.Fade ? row.style.opacity.value :
-            transition == NotificationTransition.Scale ? (row.transform.scale.x - .85f) / .15f : 1 + row.transform.position.x / 60;
+            transition == NotificationTransition.Scale || transition == NotificationTransition.FadeAndScale
+                ? (row.transform.scale.x - .85f) / .15f : 1 + row.transform.position.x / 60;
         private static DeucarianEditorMessageData Item(string id) =>
             new DeucarianEditorMessageData(id, "Warning", "Test content", DeucarianEditorStatus.Warning, "");
     }

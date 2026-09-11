@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Deucarian.Editor;
 using Deucarian.Notifications.Unity;
 using Deucarian.Theming;
+using Deucarian.UI;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -20,13 +21,13 @@ namespace Deucarian.Notifications.Editor
         private NotificationRowView template;
         private bool disposed;
 
-        internal NotificationLabRowPreview(DeucarianEditorLabWorkspace view)
+        internal NotificationLabRowPreview(DeucarianEditorLabWorkspace view, bool autoAdvance = true)
         {
             this.view = view;
             view.PresentRow = Present;
             view.PlaceRow = Place;
             view.DismissRow = Dismiss;
-            EditorApplication.update += Tick;
+            if (autoAdvance) EditorApplication.update += Tick;
         }
 
         internal void Configure(NotificationPresentationSettings settings, Component runtimeView)
@@ -43,7 +44,8 @@ namespace Deucarian.Notifications.Editor
                 if (theme == null) theme = provider != null ? provider.CurrentTheme : null;
                 if (theme == null) theme = DeucarianThemeRuntimeResolver.LoadSettings()?.ResolvedDefaultTheme;
             }
-            foreach (var motion in motions.Values) motion.Transition.Configure(this.settings);
+            foreach (var motion in motions.Values)
+            { motion.Transition.Configure(this.settings); motion.Reflow.DurationSeconds = this.settings.ReflowDuration; }
             view.PreviewRoot.tooltip = theme != null ? "Project theme: " + theme.DisplayName : "Visual styling is off or no theme is assigned. Authored notification defaults are previewed.";
         }
 
@@ -62,7 +64,7 @@ namespace Deucarian.Notifications.Editor
         private void Place(DeucarianEditorMessageRow row, VisualElement destination, int index)
         {
             if (!motions.TryGetValue(row, out var motion))
-            { motion = new Motion(row); motions.Add(row, motion); }
+            { motion = new Motion(row); motion.Reflow.DurationSeconds = settings.ReflowDuration; motions.Add(row, motion); }
             motion.Destination = destination; motion.Index = index;
             bool wantsVisible = destination == view.VisibleRows;
             if (row.parent == view.VisibleRows && motion.Started && !wantsVisible)
@@ -75,10 +77,11 @@ namespace Deucarian.Notifications.Editor
                 motion.Exiting = false;
                 motion.Transition.SetVisible(true, settings);
             }
-            Insert(motion);
+            if (!wantsVisible || row.parent != destination) Insert(motion);
             if (!wantsVisible)
             {
                 motion.Started = false;
+                motion.Reflow.Reset();
                 motion.Row.style.display = DisplayStyle.Flex;
                 motion.Row.style.opacity = 1;
                 motion.Row.transform.scale = Vector3.one;
@@ -116,7 +119,7 @@ namespace Deucarian.Notifications.Editor
         private void Dismiss(DeucarianEditorMessageRow row, Action complete)
         {
             if (!motions.TryGetValue(row, out var motion) || !motion.Started || row.parent != view.VisibleRows)
-            { motions.Remove(row); complete(); return; }
+            { if (motion != null) motion.Reflow.Dispose(); motions.Remove(row); complete(); return; }
             motion.Complete = complete;
             if (!motion.Exiting) BeginExit(motion);
             if (motion.Transition.IsHidden) FinishExit(motion);
@@ -125,6 +128,10 @@ namespace Deucarian.Notifications.Editor
 
         private void BeginExit(Motion motion)
         {
+            motion.ExitIndex = 0;
+            foreach (var other in motions.Values)
+                if (other.Started && other.Row.parent == view.VisibleRows &&
+                    view.VisibleRows.IndexOf(other.Row) < view.VisibleRows.IndexOf(motion.Row)) motion.ExitIndex++;
             motion.Exiting = true;
             motion.Transition.SetVisible(false, settings);
             motion.Apply();
@@ -133,8 +140,9 @@ namespace Deucarian.Notifications.Editor
         private void FinishExit(Motion motion)
         {
             if (motion.Complete != null)
-            { motions.Remove(motion.Row); motion.Complete(); return; }
+            { motions.Remove(motion.Row); motion.Reflow.Dispose(); motion.Complete(); return; }
             motion.Started = false; motion.Exiting = false;
+            motion.Reflow.Reset();
             Insert(motion);
             motion.Row.style.display = DisplayStyle.Flex;
             motion.Row.style.opacity = 1;
@@ -164,7 +172,7 @@ namespace Deucarian.Notifications.Editor
             foreach (var pair in new List<KeyValuePair<DeucarianEditorMessageRow, Motion>>(motions))
             {
                 var motion = pair.Value;
-                if (motion.Row.parent == null) { motions.Remove(pair.Key); motion.Complete?.Invoke(); continue; }
+                if (motion.Row.parent == null) { motions.Remove(pair.Key); motion.Reflow.Dispose(); motion.Complete?.Invoke(); continue; }
                 if (motion.Row.parent != view.VisibleRows)
                     continue;
                 if (!motion.Started)
@@ -174,12 +182,29 @@ namespace Deucarian.Notifications.Editor
                     motion.Row.style.display = DisplayStyle.Flex;
                     motion.Transition.SetVisible(true, settings);
                 }
-                motion.Transition.Advance(Mathf.Max(0, (float)(now - motion.LastTime)));
+                float seconds = Mathf.Max(0, (float)(now - motion.LastTime));
+                motion.Transition.Advance(seconds);
+                motion.Reflow.Advance(seconds);
                 motion.LastTime = now;
                 motion.Apply();
                 if (motion.Exiting && motion.Transition.IsHidden)
                 { FinishExit(motion); occupied--; }
             }
+            OrderVisibleRows();
+        }
+
+        private void OrderVisibleRows()
+        {
+            var showing = new List<Motion>();
+            var exiting = new List<Motion>();
+            foreach (var motion in motions.Values)
+                if (motion.Started && motion.Row.parent == view.VisibleRows)
+                { if (motion.Exiting) exiting.Add(motion); else showing.Add(motion); }
+            showing.Sort((a, b) => a.Index.CompareTo(b.Index));
+            exiting.Sort((a, b) => a.ExitIndex.CompareTo(b.ExitIndex));
+            foreach (var motion in exiting) showing.Insert(Math.Min(motion.ExitIndex, showing.Count), motion);
+            for (int i = 0; i < showing.Count; i++)
+                if (view.VisibleRows.IndexOf(showing[i].Row) != i) view.VisibleRows.Insert(i, showing[i].Row);
         }
 
         public void Dispose()
@@ -187,7 +212,7 @@ namespace Deucarian.Notifications.Editor
             if (disposed) return;
             disposed = true; EditorApplication.update -= Tick;
             view.PresentRow = null; view.PlaceRow = null; view.DismissRow = null;
-            foreach (var motion in motions.Values) motion.Complete?.Invoke();
+            foreach (var motion in motions.Values) { motion.Reflow.Dispose(); motion.Complete?.Invoke(); }
             motions.Clear();
         }
 
@@ -197,15 +222,18 @@ namespace Deucarian.Notifications.Editor
             internal bool Started, Exiting;
             internal double LastTime;
             internal NotificationRowTransition Transition = new NotificationRowTransition();
+            internal readonly DeucarianUIToolkitReflow Reflow;
             internal VisualElement Destination;
             internal int Index;
+            internal int ExitIndex;
             internal Action Complete;
-            internal Motion(DeucarianEditorMessageRow row) => Row = row;
+            internal Motion(DeucarianEditorMessageRow row)
+            { Row = row; Reflow = new DeucarianUIToolkitReflow(row, _ => { if (Started) Apply(); }); }
             internal void Apply()
             {
                 Row.style.opacity = Transition.Alpha;
                 Row.transform.scale = Vector3.one * Transition.Scale;
-                Row.transform.position = Transition.Offset;
+                Row.transform.position = Transition.Offset + (Reflow?.Offset ?? Vector2.zero);
             }
         }
     }

@@ -12,9 +12,15 @@ namespace Deucarian.Notifications.Unity
         public bool IsShowing { get; private set; }
         public bool IsHidden => transition.Phase == DeucarianVisibilityPhase.Hidden;
         public float Progress => transition.Progress;
-        public float Alpha => Mode == NotificationTransition.Fade ? Progress : Progress > 0 ? 1 : 0;
-        public float Scale => Mode == NotificationTransition.Scale ? Mathf.Lerp(.85f, 1, Progress) : 1;
-        public Vector2 Offset => Mode == NotificationTransition.Slide ? new Vector2(-60 * (1 - Progress), 0) : Vector2.zero;
+        public float Alpha => Fades ? Progress : Progress > 0 ? 1 : 0;
+        public float Scale => Scales ? Mathf.Lerp(.85f, 1, Progress) : 1;
+        public Vector2 Offset => Slides ? new Vector2(-60 * (1 - Progress), 0) : Vector2.zero;
+        private bool Fades => Mode == NotificationTransition.Fade || Mode == NotificationTransition.FadeAndScale ||
+            Mode == NotificationTransition.FadeAndSlide || Mode == NotificationTransition.FadeScaleAndSlide;
+        private bool Scales => Mode == NotificationTransition.Scale || Mode == NotificationTransition.FadeAndScale ||
+            Mode == NotificationTransition.ScaleAndSlide || Mode == NotificationTransition.FadeScaleAndSlide;
+        private bool Slides => Mode == NotificationTransition.Slide || Mode == NotificationTransition.FadeAndSlide ||
+            Mode == NotificationTransition.ScaleAndSlide || Mode == NotificationTransition.FadeScaleAndSlide;
         private NotificationTransition Mode => IsShowing ? settings.show : settings.hide;
         private float Duration => IsShowing ? settings.showSeconds : settings.hideSeconds;
 
