@@ -219,6 +219,7 @@ namespace Deucarian.Notifications.Editor
         internal NotificationLabRuntimeConnection Connection => runtimeConnection;
         internal string RuntimeStatus => runtimeStatus;
         internal string AudioStatus => audio?.Status ?? "The test session is restarting.";
+        internal bool AudioAvailable => audio != null && audio.IsAvailable;
         internal DeucarianAudioPaletteSet Palette { get => paletteSet; set { paletteSet = value; audio?.Configure(value, experience, soundEnabled && runtimeConnection == null); } }
         internal bool HasLast => !lastCustomId.IsEmpty;
 
@@ -231,6 +232,12 @@ namespace Deucarian.Notifications.Editor
         internal void ResolveLast() { session?.Resolve(lastCustomId); workspace?.Refresh(); }
         internal void ClearMessages() { session?.Reset(); lastCustomId = default; audio?.Stop(); workspace?.Refresh(); }
         internal void StopAudio() => audio?.Stop();
+        internal void PreviewPing(NotificationSeverity kind)
+        {
+            if (runtimeConnection != null) return;
+            audio?.TryPreviewFeedback(new NotificationFeedbackRequest(NotificationLabSession.FeedbackRole(kind), kind, (int)kind * 10, 1));
+            workspace?.Refresh();
+        }
         internal void OpenAudioLab()
         {
             string guid = paletteSet == null ? null : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(paletteSet));

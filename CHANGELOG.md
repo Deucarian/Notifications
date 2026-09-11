@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.5] - 2026-09-11
+
+- Match Test, Appearance, Audio and custom Inspectors to the shared style; retain isolated previews, runtime injection, dismissal, sound and motion settings.
+- Require Editor 1.10.6 for the shared native controls, typography, responsive layouts and accessible interaction states.
+
 ## [0.3.4] - 2026-09-10
 
 - Use shared sliders for message capacity and the shared audio-disabled state. Keep message injection, lifetime, motion and lazy follow independent of visual palette adoption.
