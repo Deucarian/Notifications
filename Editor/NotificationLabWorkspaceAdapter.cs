@@ -21,29 +21,24 @@ namespace Deucarian.Notifications.Editor
         private bool refreshing;
         private bool disposed;
         private NotificationLabAudioPanel audioPanel;
-        private readonly NotificationLabMotionPreview motion = new NotificationLabMotionPreview();
+        private readonly NotificationLabRowPreview preview;
 
         internal NotificationLabWorkspaceAdapter(VisualElement root, DeucarianNotificationLabWindow host)
         {
             this.host = host;
             view = new DeucarianEditorLabWorkspace(root,
                 System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(Application.dataPath)),
-                "Notifications", "Create a test message and see what happens.", host.ClearMessages, SelectTarget);
+                "Notifications", "Add and resolve messages in the editor or running app.", host.ClearMessages, SelectTarget);
             DeucarianEditorWorkspaceNavigation.Populate(view.Workspace, "deucarian.notifications.lab", host.OpenAudioLab);
             BindComposer();
             BindAppearance();
             BindAudio();
-            view.MotionPreviewRoot.Add(motion);
-            view.TabChanged += index => { if (index != 1) motion.Stop(); };
-            for (int i = 0; i < 3; i++)
-            {
-                DeucarianEditorMessageRow row = null;
-                row = new DeucarianEditorMessageRow("This is a notification", null, DeucarianEditorStatus.Warning, null,
-                    "Dismiss", () => DeucarianEditorWorkspaceControls.Show(row, false));
-                var dismiss = row.Q<Button>();
-                dismiss.text = "×"; dismiss.tooltip = "Dismiss this preview message";
-                motion.Specimen.Add(row);
-            }
+            preview = new NotificationLabRowPreview(view);
+            var replay = DeucarianEditorWorkspaceControls.IconButton("Replay entrance", DeucarianEditorIconIds.Play,
+                preview.Replay);
+            replay.name = "motion-preview-play";
+            replay.tooltip = "Replays the visible messages without restarting their timers.";
+            view.MotionPreviewRoot.Add(replay);
         }
 
         private void Change(Action<NotificationLabRecipeData> update)
@@ -110,7 +105,7 @@ namespace Deucarian.Notifications.Editor
             tuning.Action("lab-reset-follow", "Reset follow tuning", () => Change(x => x.presentation.follow = Deucarian.UI.DeucarianLazyFollowSettings.Default));
             tuning.EnabledWhen(() => host.Inputs.presentation.lazyFollow);
             advanced.Note(() => host.Connection == null
-                ? "The editor previews content, limits and timing. Connect a running list to see its theme, transitions and lazy follow. No camera is created or moved."
+                ? "Test and Appearance share the same messages, theme and transitions. Lazy follow needs a running camera-space or XR list; this editor preview never moves a scene camera."
                 : host.Connection.SupportsPresentation
                     ? "Live overrides affect this list only and are restored on disconnect. Colours and typography follow the application's theme."
                     : "This custom view does not expose presentation settings; its host controls layout and motion.");
@@ -128,6 +123,7 @@ namespace Deucarian.Notifications.Editor
             {
                 RefreshTargets();
                 var settings = host.Inputs.presentation.Sanitized();
+                preview.Configure(settings, host.Connection?.Target.View as Component);
                 var visibleSnapshot = NotificationVisibility.Select(host.Snapshot, settings.maxVisible);
                 var visible = new List<DeucarianEditorMessageData>();
                 var hidden = new List<DeucarianEditorMessageData>();
@@ -137,10 +133,6 @@ namespace Deucarian.Notifications.Editor
                 view.SetMessages(visible, hidden, host.Session?.PendingCount ?? 0);
                 view.RefreshForms();
                 audioPanel.Refresh();
-                motion.Enter = settings.show;
-                motion.Exit = settings.hide;
-                motion.EnterSeconds = settings.showSeconds;
-                motion.ExitSeconds = settings.hideSeconds;
                 view.Workspace.FooterLeading.text = host.Session == null ? "Session restarting…"
                     : (host.Connection == null ? "Editor preview" : "Connected · lab messages only") + " · " + host.Session.PingCount + " ping requests";
                 view.Workspace.FooterTrailing.text = "Maximum " + settings.maxVisible + " · " + settings.show + " / " + settings.hide + " · Lazy follow " + (settings.lazyFollow ? "on" : "off");
@@ -196,6 +188,6 @@ namespace Deucarian.Notifications.Editor
                 timed ? null : "Resolve", timed ? (Action)null : () => { host.Session?.Resolve(item.Id); Refresh(); }, !recovering);
         }
 
-        public void Dispose() { if (disposed) return; disposed = true; audioPanel?.Dispose(); motion.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
+        public void Dispose() { if (disposed) return; disposed = true; audioPanel?.Dispose(); preview.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
     }
 }

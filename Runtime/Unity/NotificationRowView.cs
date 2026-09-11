@@ -18,9 +18,23 @@ namespace Deucarian.Notifications.Unity
         [SerializeField] private NotificationViewStyle style;
         [SerializeField] private Graphic backgroundGraphic;
         private NotificationSeverity currentSeverity;
+        private NotificationRowVisualBaseline baseline;
+        private NotificationRowLayout layout;
 
         public NotificationId NotificationId { get; private set; }
         public Color BodyColor => bodyText != null ? bodyText.color : Color.white;
+        public NotificationViewStyle ViewStyle => style;
+        public float PreferredHeight
+        {
+            get
+            {
+                var rect = transform as RectTransform;
+                var element = GetComponent<LayoutElement>();
+                return Mathf.Max(rect != null ? rect.rect.height : 0, element != null ? element.preferredHeight : 0);
+            }
+        }
+        public NotificationRowAppearance AuthoredAppearance(NotificationSeverity severity)
+        { EnsureBaseline(); return baseline.Colors(ResolveSeverityColor(severity)); }
         internal event System.Action AppearanceChanged;
 
         public void Configure(
@@ -33,6 +47,8 @@ namespace Deucarian.Notifications.Unity
             bodyText = body;
             severityGraphic = severity;
             style = viewStyle;
+            baseline = null;
+            layout = null;
             DisableRaycasts();
         }
 
@@ -71,38 +87,70 @@ namespace Deucarian.Notifications.Unity
 
         private void ApplyAppearance()
         {
+            EnsureBaseline();
+            if (!DeucarianThemeRuntimeResolver.UseVisualStyling) { OnVisualStylingDisabled(); return; }
             DeucarianTheme theme = ResolveTheme(null);
             if (theme != null) ApplyResolvedTheme(theme);
+            else OnVisualStylingDisabled();
         }
 
         protected override void ApplyResolvedTheme(DeucarianTheme theme)
         {
-            if (backgroundGraphic == null) backgroundGraphic = GetComponent<Graphic>();
-            string severityRole = currentSeverity == NotificationSeverity.Error ? DeucarianBuiltinColorRoleIds.Error
-                : currentSeverity == NotificationSeverity.Warning ? DeucarianBuiltinColorRoleIds.Warning
-                : currentSeverity == NotificationSeverity.Success ? DeucarianBuiltinColorRoleIds.Success : DeucarianBuiltinColorRoleIds.Info;
-            if (severityGraphic != null) severityGraphic.color = Resolve(theme, severityRole, ResolveSeverityColor(currentSeverity));
-            if (backgroundGraphic != null)
-            {
-                Color surface = Resolve(theme, style != null ? style.SurfaceRole : DeucarianBuiltinColorRoleIds.SurfaceRaised,
-                    new Color(0.07f, 0.08f, 0.10f, 0.92f));
-                backgroundGraphic.color = surface;
-                DeucarianUGUIThemeStyleUtility.ApplyPanel(backgroundGraphic, surface, theme.VisualStyle);
-            }
-            if (titleText != null) titleText.color = Resolve(theme,
-                style != null ? style.TitleRole : DeucarianBuiltinColorRoleIds.TextPrimary, Color.white);
-            if (bodyText != null) bodyText.color = Resolve(theme,
-                style != null ? style.BodyRole : DeucarianBuiltinColorRoleIds.TextSecondary, Color.white);
+            EnsureBaseline();
+            baseline.Restore();
+            layout?.Restore();
+            var appearance = NotificationRowAppearance.Resolve(theme, style, currentSeverity, baseline.Colors(ResolveSeverityColor(currentSeverity)));
+            if (severityGraphic != null) severityGraphic.color = appearance.Severity;
+            if (backgroundGraphic != null) backgroundGraphic.color = appearance.Surface;
+            if (titleText != null) titleText.color = appearance.Title;
+            if (bodyText != null) bodyText.color = appearance.Body;
             if (theme.VisualStyle != null && theme.VisualStyle.TypographyProfile != null)
             {
                 ApplyTypography(titleText, DeucarianThemeTextRole.Title, theme.VisualStyle);
                 ApplyTypography(bodyText, DeucarianThemeTextRole.Body, theme.VisualStyle);
             }
+            layout?.Fit(true);
             AppearanceChanged?.Invoke();
         }
 
-        private static Color Resolve(DeucarianTheme theme, string role, Color fallback) =>
-            theme.TryGetColorById(role, out Color value) ? value : fallback;
+        private void EnsureBaseline()
+        {
+            if (backgroundGraphic == null) backgroundGraphic = GetComponent<Graphic>();
+            if (baseline == null) baseline = new NotificationRowVisualBaseline(backgroundGraphic, titleText, bodyText);
+            if (layout == null) layout = new NotificationRowLayout(transform as RectTransform, titleText, bodyText, severityGraphic);
+        }
+
+        internal void CopyAuthoredBaselineFrom(NotificationRowView template)
+        {
+            if (template == null) throw new System.ArgumentNullException(nameof(template));
+            template.EnsureBaseline();
+            EnsureBaseline();
+            baseline = template.baseline.CopyTo(backgroundGraphic, titleText, bodyText);
+            layout = template.layout.CopyTo(transform as RectTransform, titleText, bodyText, severityGraphic);
+            baseline.Restore();
+            layout.Restore();
+            if (isActiveAndEnabled) ApplyAppearance();
+        }
+
+        protected override void OnVisualStylingDisabled()
+        {
+            baseline?.Restore();
+            layout?.Restore();
+            layout?.Fit(true);
+            if (severityGraphic != null) severityGraphic.color = ResolveSeverityColor(currentSeverity);
+            AppearanceChanged?.Invoke();
+        }
+
+        private void LateUpdate()
+        {
+            if (layout != null && layout.Fit()) AppearanceChanged?.Invoke();
+        }
+
+        protected override void OnRuntimeSettingsChanged(Object asset)
+        {
+            if (asset is DeucarianThemeRuntimeSettings || asset is DeucarianColorPalette || asset is DeucarianThemeStyle)
+                ApplyAppearance();
+        }
 
         private static void ApplyTypography(TMP_Text text, DeucarianThemeTextRole role, DeucarianThemeStyle visualStyle)
         {

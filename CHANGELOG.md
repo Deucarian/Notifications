@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0] - 2026-09-11
+
+- Share one live preview between Test and Appearance, preserving rows, countdowns and selected presentation settings when changing tabs.
+- Apply the runtime-owned semantic color policy to editor rows; preview actual entrance/exit transitions and reserve exiting row slots before showing replacements.
+- Share renderer-independent reversible row transitions with runtime: identical easing, scale and slide distance; None transitions complete immediately. Overflow moves retain outgoing slots without hidden rows consuming layout space.
+- Preview the connected list's authored row palette when visual styling is disabled or a semantic role is missing.
+- Replace application-specific bundled font references with Theming's Inter assets. Expand stacked rows for larger typography while preserving padding, visible glyphs and chosen font sizes; document TMP's official Essential Resources prerequisite.
+- Restore authored runtime row colors, typography and geometry when visual styling is disabled, including clones of already-themed inactive templates and pooled rows; reapply on settings/palette changes.
+- Defer appearance-triggered row sorting until reconciliation finishes so priority changes and removals cannot skip rows or retain stale capacity.
+- Require Editor 1.11.0 and Theming 1.7.0 for shared row presentation ports and visual feature lifecycle support.
+
 ## [0.3.5] - 2026-09-11
 
 - Match Test, Appearance, Audio and custom Inspectors to the shared style; retain isolated previews, runtime injection, dismissal, sound and motion settings.

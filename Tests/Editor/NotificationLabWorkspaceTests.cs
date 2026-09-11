@@ -38,6 +38,7 @@ namespace Deucarian.Notifications.Tests
                 Assert.That(root.Q<Foldout>("lab-overflow").contentContainer.childCount, Is.EqualTo(9));
                 yield return Click(root.Q<Button>("lab-clear"));
                 Assert.That(window.SessionForTests.Store.Snapshot.Count, Is.Zero);
+                yield return WaitForExit(root);
                 Assert.That(root.Q("lab-visible-rows").childCount, Is.Zero);
                 Assert.That(root.Q<Foldout>("lab-overflow").contentContainer.childCount, Is.Zero);
                 root.Q<TextField>("lab-title").value = " ";
@@ -67,6 +68,7 @@ namespace Deucarian.Notifications.Tests
                 while (window.SessionForTests.Store.Snapshot.Count > 0 && EditorApplication.timeSinceStartup < deadline)
                 { window.TickForTests(); yield return null; }
                 Assert.That(window.SessionForTests.Store.Snapshot.Count, Is.Zero);
+                yield return WaitForExit(window.rootVisualElement);
                 Assert.That(window.rootVisualElement.Q("lab-visible-rows").childCount, Is.Zero);
             }
             finally { window.Inputs = original; window.Close(); }
@@ -105,6 +107,13 @@ namespace Deucarian.Notifications.Tests
             yield return null;
             using (var evt = NavigationSubmitEvent.GetPooled())
             { evt.target = button; button.SendEvent(evt); }
+        }
+
+        private static IEnumerator WaitForExit(VisualElement root)
+        {
+            double deadline = EditorApplication.timeSinceStartup + 3;
+            while (root.Q("lab-visible-rows").childCount > 0 && EditorApplication.timeSinceStartup < deadline)
+                yield return null;
         }
     }
 }

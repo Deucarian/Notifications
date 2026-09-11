@@ -13,6 +13,7 @@ namespace Deucarian.Notifications.Editor
             "Packages/com.deucarian.notifications/Runtime/Resources/Deucarian/Notifications/Defaults";
         private const string StylePath = Root + "/DefaultNotificationViewStyle.asset";
         private const string PrefabPath = Root + "/DefaultNotificationList.prefab";
+        private const string DefaultFontPath = "Packages/com.deucarian.theming/Runtime/Fonts/Inter-Regular SDF.asset";
 
         [MenuItem("Assets/Create/Deucarian/Notifications/Repair Default View Assets")]
         public static void GenerateDefaults()
@@ -172,6 +173,8 @@ namespace Deucarian.Notifications.Editor
             rect.anchoredPosition = new Vector2(18f, top);
             rect.sizeDelta = new Vector2(width, height);
             TextMeshProUGUI text = value.GetComponent<TextMeshProUGUI>();
+            text.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DefaultFontPath);
+            if (text.font == null) throw new System.InvalidOperationException("Theming's bundled Inter font is required to generate notification defaults.");
             text.fontSize = size;
             text.fontStyle = style;
             text.color = Color.white;
