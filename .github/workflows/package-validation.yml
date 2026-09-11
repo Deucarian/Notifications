@@ -13,3 +13,5 @@ jobs:
     uses: Deucarian/Package-Registry/.github/workflows/deucarian-package-validation.yml@develop
     with:
       package-config: deucarian-package.json
+      # Registry #150 records the ownership review for these explicit registrations.
+      registry-ref: a59a1653cdb1e0a8b772d0ca21cd041f6dfc4dcf
