@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b31577b3d60114b4d9e9feffdfc972d8, type: 3}
+  m_Name: DefaultLightTheme
+  m_EditorClassIdentifier: Deucarian.Theming::Deucarian.Theming.DeucarianTheme
+  themeId: deucarian.theme.default.light
+  displayName: Deucarian Default Light
+  colorPalette: {fileID: 11400000, guid: 21bcc8f3b328c40429d7fb74c039ef75, type: 2}
+  audioPalette: {fileID: 0}
+  audioPaletteSet: {fileID: 0}
+  visualStyle: {fileID: 11400000, guid: 6d8ce1d37e78522418f78a2231160989, type: 2}

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4ff840b639d8a747b6a838abc253109, type: 3}
+  m_Name: MaterialDarkStyle
+  m_EditorClassIdentifier: Deucarian.Theming::Deucarian.Theming.DeucarianThemeStyle
+  styleId: deucarian.style.material-dark
+  displayName: Material Dark
+  description: Solid layered surfaces with restrained radius, crisp borders, and
+    opaque dark chrome.
+  surfaceProfile: {fileID: 11400000, guid: 7c6967abc752ee443bc55658140b9057, type: 2}
+  shapeProfile: {fileID: 11400000, guid: b68ccffaa283d274aac77169e8c5b58f, type: 2}
+  strokeProfile: {fileID: 11400000, guid: 2e0b7414909aa2148acf5451c42deee5, type: 2}
+  typographyProfile: {fileID: 11400000, guid: 1fb249f85353b314aa32eb6663579d2d, type: 2}
+  density: 3
+  isVariant: 0
+  surfaceTreatment: 2
+  darkSurfaceTint: {r: 0.09411765, g: 0.1254902, b: 0.16470589, a: 1}
+  lightSurfaceTint: {r: 0.96862745, g: 0.98039216, b: 0.9882353, a: 1}
+  surfaceTintStrength: 0.04
+  surfaceAlphaMultiplier: 1
+  minimumSurfaceAlpha: 1
+  maximumSurfaceAlpha: 1
+  borderTint: {r: 1, g: 1, b: 1, a: 1}
+  borderTintStrength: 0.1
+  borderAlpha: 0.18
+  borderWidth: 1
+  cornerRadius: 4
+  useGeneratedNoiseTexture: 0
+  textureTint: {r: 0, g: 0, b: 0, a: 0}
+  generatedTextureSize: 32
+  generatedTextureBlurRadius: 0
+  generatedTextureBlurStrength: 0

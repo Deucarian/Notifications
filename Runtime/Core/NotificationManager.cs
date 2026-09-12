@@ -21,6 +21,8 @@ namespace Deucarian.Notifications
 
         public static void Warn(NotificationKey key, string title, string message) => Service.Warn(key, title, message);
         public static void Show(NotificationDefinition definition) => Service.Show(definition);
+        public static void Show(NotificationKey key, string title = null, string message = null) => Service.Show(key, title, message);
+        public static void Show(NotificationKey key, NotificationContentOverrides overrides) => Service.Show(key, overrides);
         public static void Resolve(NotificationKey key) => Service.Resolve(key);
 
         private sealed class Registration : IDisposable

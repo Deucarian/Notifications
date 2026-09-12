@@ -3,7 +3,7 @@
 Package ID: `com.deucarian.notifications`
 Repository: `Deucarian/Notifications`
 
-Follow the canonical Deucarian governance in Package Registry `ARCHITECTURE.md`.
+Follow the canonical [Deucarian architecture](https://github.com/Deucarian/Package-Registry/blob/main/ARCHITECTURE.md).
 
 ## Ownership
 

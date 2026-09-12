@@ -8,11 +8,14 @@ namespace Deucarian.Notifications
         private readonly NotificationStore store;
         private readonly NotificationEpisodeController episodes;
         private readonly NotificationPresenter presenter;
+        private readonly INotificationDefinitions definitions;
         private bool disposed;
 
         public NotificationService(INotificationClock clock = null,
-            INotificationFeedbackSink feedback = null, INotificationListView view = null)
+            INotificationFeedbackSink feedback = null, INotificationListView view = null,
+            INotificationDefinitions definitions = null)
         {
+            this.definitions = definitions;
             store = new NotificationStore(feedback);
             episodes = new NotificationEpisodeController(store, clock ?? new StopwatchNotificationClock());
             if (view == null) return;
@@ -32,6 +35,19 @@ namespace Deucarian.Notifications
         {
             ThrowIfDisposed();
             episodes.EvaluateBatch(new[] { new NotificationConditionSample(definition, true, default) });
+        }
+
+        public void Show(NotificationKey key, string title = null, string message = null) =>
+            Show(key, new NotificationContentOverrides(title, message));
+
+        public void Show(NotificationKey key, NotificationContentOverrides overrides)
+        {
+            ThrowIfDisposed();
+            RequireKey(key);
+            if (definitions == null || !definitions.TryGet(key, out var definition))
+                throw new InvalidOperationException("Notification '" + key.Id + "' is missing from the configured catalog. Create or register it in the Notification Lab and configure the NotificationHost's catalog.");
+            Show(new NotificationDefinition(definition.Id, definition.Severity, overrides?.Title ?? definition.Title,
+                overrides?.Message ?? definition.Body, definition.Priority, overrides?.FeedbackRoleId ?? definition.FeedbackRoleId, definition.Lifetime));
         }
 
         public void Resolve(NotificationKey key)

@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [0.5.0] - Unreleased
+
+- Add reusable notification content, severity, lifetime and audio defaults; expose one-line typed Show/Resolve and Inspector triggers in the shared Notification Lab workflow.
+- Include a playable Definition Workflow sample with configured hosts, short callers and usage documentation.
+- Align declared package dependencies with the definition-authoring development wave.
 
 - Smoothly reflow existing runtime and Lab rows when items are inserted, reordered or removed. Keep exiting slots until their exit finishes; use a stable top anchor so growing lists no longer recenter.
 - Add independent Animate list changes and List movement duration controls. Existing serialized settings default to smooth movement; instant layout remains available.
@@ -10,6 +14,7 @@
 
 - Add a playable scene demonstrating persistent warnings, resolution, timed success, bounded overflow and bundled semantic audio.
 - Expose sample title, message and timeout in the Inspector while using the package-owned notification host and facade.
+
 
 ## [0.4.0] - 2026-09-11
 
