@@ -22,8 +22,8 @@
   "dependencies": {
     "com.deucarian.common": "0.2.1",
     "com.deucarian.diagnostics": "0.1.6",
-    "com.deucarian.editor": "1.12.0",
-    "com.deucarian.theming": "1.8.0",
+    "com.deucarian.editor": "1.13.0",
+    "com.deucarian.theming": "1.9.0",
     "com.deucarian.ui": "0.3.0",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.ugui": "1.0.0"
