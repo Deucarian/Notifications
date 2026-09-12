@@ -12,9 +12,9 @@ namespace Deucarian.Notifications.Editor
         internal void Bind(DeucarianEditorWorkspaceForm form, Func<NotificationLabRecipeData> capture,
             Action<NotificationLabRecipeData> apply)
         {
-            form.Asset("lab-recipe", "Recipe", typeof(NotificationLabRecipe), () => recipe, value => recipe = (NotificationLabRecipe)value);
+            form.AssetWithActions("lab-recipe", "Recipe", typeof(NotificationLabRecipe), () => recipe, value => recipe = (NotificationLabRecipe)value,
+                create: () => { Save(capture()); return recipe; }, customize: DeucarianEditorAssetCatalog.CopyToProject);
             form.Action("lab-load-recipe", "Load recipe", () => apply(recipe.settings), () => recipe != null);
-            form.Action("lab-save-recipe", "Save as recipe…", () => Save(capture()));
             form.Note(() => "Recipes save inputs, not live messages, connections or application state.");
         }
 

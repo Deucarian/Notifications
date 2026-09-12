@@ -1,5 +1,9 @@
 # Changelog
 
+## Asset workflow — Unreleased
+
+- Use shared package-aware palette/recipe selection and create/customize actions; choose configured audio before the bundled fallback.
+
 ## [0.5.0] - Unreleased
 
 - Add reusable notification content, severity, lifetime and audio defaults; expose one-line typed Show/Resolve and Inspector triggers in the shared Notification Lab workflow.

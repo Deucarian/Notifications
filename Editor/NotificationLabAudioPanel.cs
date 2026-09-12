@@ -28,8 +28,10 @@ namespace Deucarian.Notifications.Editor
             var content = new VisualElement();
             var panel = Ui.IconPanel("lab-audio-card", DeucarianEditorIconIds.Notifications, content);
             form = new DeucarianEditorWorkspaceForm(content);
-            form.Asset("lab-palette", "Palette set", typeof(DeucarianAudioPaletteSet), () => host.Palette,
-                value => { host.Palette = (DeucarianAudioPaletteSet)value; Refresh(); });
+            form.AssetWithActions("lab-palette", "Palette set", typeof(DeucarianAudioPaletteSet), () => host.Palette,
+                value => { host.Palette = (DeucarianAudioPaletteSet)value; Refresh(); },
+                DeucarianThemeAssetCustomization.CreateAudio, DeucarianThemeAssetCustomization.Customize,
+                () => DeucarianThemeRuntimeResolver.LoadSettings()?.DefaultAudioPaletteSet ?? DeucarianAudioDefaults.LoadPaletteSet());
             form.Choice("lab-feedback-role", "Role", Enum.GetNames(typeof(NotificationSeverity)), () => (int)severity,
                 value => { severity = (NotificationSeverity)value; Refresh(); });
             cueRoot = new VisualElement(); content.Add(cueRoot);
