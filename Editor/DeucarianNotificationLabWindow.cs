@@ -134,10 +134,7 @@ namespace Deucarian.Notifications.Editor
             if (Selection.activeObject is DeucarianAudioPaletteSet selected) paletteSet = selected;
             if (paletteSet == null)
             {
-                string[] matches = AssetDatabase.FindAssets("t:DeucarianAudioPaletteSet", new[] { "Assets" });
-                if (matches.Length == 1)
-                    paletteSet = AssetDatabase.LoadAssetAtPath<DeucarianAudioPaletteSet>(AssetDatabase.GUIDToAssetPath(matches[0]));
-                if (paletteSet == null) paletteSet = DeucarianAudioDefaults.LoadPaletteSet();
+                paletteSet = DeucarianThemeRuntimeResolver.LoadSettings()?.DefaultAudioPaletteSet ?? DeucarianAudioDefaults.LoadPaletteSet();
             }
             audio?.Configure(paletteSet, experience, soundEnabled && runtimeConnection == null);
         }

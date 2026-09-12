@@ -1,5 +1,9 @@
 # Deucarian Notifications
 
+## Asset selection and project defaults
+
+Notification Lab's audio selector uses the configured project audio palette, falling back to the bundled Deucarian palette. Choose can find project and installed package assets; Create and Customize make project assets explicitly. The recipe picker can create a recipe from the current lab configuration; select a recipe and choose Load to apply it. Merely opening the Lab does not save a recipe or change runtime configuration.
+
 ## Typed definition workflow
 
 Create or edit the notification in Definitions or the Notification Lab. Its title, message and audio policy are reused here.
