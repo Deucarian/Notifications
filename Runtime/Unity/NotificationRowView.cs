@@ -21,6 +21,14 @@ namespace Deucarian.Notifications.Unity
         private NotificationSeverity currentSeverity;
         private NotificationRowVisualBaseline baseline;
         private NotificationRowLayout layout;
+        private bool persistent;
+        private System.Action<NotificationId> resolve;
+        internal bool HasResolutionAction => GetComponent<NotificationRowAction>()?.CanResolve == true;
+        internal void BindResolution(System.Action<NotificationId> handler)
+        {
+            resolve = handler;
+            GetComponent<NotificationRowAction>()?.Bind(NotificationId, persistent, resolve);
+        }
 
         public NotificationId NotificationId { get; private set; }
         public Color BodyColor => bodyText != null ? bodyText.color : Color.white;
@@ -58,6 +66,7 @@ namespace Deucarian.Notifications.Unity
         public void Render(NotificationItem item)
         {
             NotificationId = item.Id;
+            persistent = item.Definition.Lifetime.Kind == NotificationLifetimeKind.UntilResolved;
             currentSeverity = item.Definition.Severity;
             if (titleText != null)
             {
@@ -79,6 +88,7 @@ namespace Deucarian.Notifications.Unity
 
             DisableRaycasts();
             ApplyAppearance();
+            BindResolution(resolve);
         }
 
         protected override void OnEnable()
@@ -108,6 +118,7 @@ namespace Deucarian.Notifications.Unity
             if (backgroundGraphic != null) backgroundGraphic.color = appearance.Surface;
             if (titleText != null) titleText.color = appearance.Title;
             if (bodyText != null) bodyText.color = appearance.Body;
+            GetComponent<NotificationRowAction>()?.ApplyTheme(theme);
             if (theme.VisualStyle != null && theme.VisualStyle.TypographyProfile != null)
             {
                 ApplyTypography(titleText, DeucarianThemeTextRole.Title, theme.VisualStyle);

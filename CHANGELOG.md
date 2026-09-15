@@ -2,6 +2,8 @@
 
 ## [0.7.1] - 2026-09-15
 
+- Match the compact Message controls card in the shared default prefab, including palette-based Light/Dark severity tints and readable text.
+- Bind the default Resolve action to the owning service and the real Lab preview; timed and read-only notifications remain passive.
 - Render sandbox notifications with the staged visual theme and explain draft versus runtime selection. Preserve Lab tabs, selection and authoring state through reload.
 
 

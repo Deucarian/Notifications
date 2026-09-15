@@ -1,4 +1,5 @@
 using Deucarian.Notifications.Unity;
+using Deucarian.Theming;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -11,37 +12,44 @@ namespace Deucarian.Notifications.Editor
     {
         private const string Root =
             "Packages/com.deucarian.notifications/Runtime/Resources/Deucarian/Notifications/Defaults";
-        private const string StylePath = Root + "/DefaultNotificationViewStyle.asset";
-        private const string PrefabPath = Root + "/DefaultNotificationList.prefab";
-        private const string RowPath = Root + "/DefaultNotificationRow.prefab";
         private const string DefaultFontPath = "Packages/com.deucarian.theming/Runtime/Fonts/Inter-Regular SDF.asset";
 
         [MenuItem("Assets/Create/Deucarian/Notifications/Repair Default View Assets")]
-        public static void GenerateDefaults()
+        public static void GenerateDefaults() => GenerateDefaultsAt(Root);
+
+        /// <summary>Exports authored defaults without modifying an installed, read-only package.</summary>
+        public static void ExportDefaults(string assetFolder)
         {
-            EnsureFolders();
-            NotificationViewStyle style = CreateOrRepairStyle();
+            if (string.IsNullOrEmpty(assetFolder) || !assetFolder.StartsWith("Assets/") || assetFolder.Contains(".."))
+                throw new System.ArgumentException("Choose a folder inside Assets.", nameof(assetFolder));
+            GenerateDefaultsAt(assetFolder.TrimEnd('/'));
+        }
+
+        private static void GenerateDefaultsAt(string folder)
+        {
+            EnsureFolders(folder);
+            NotificationViewStyle style = CreateOrRepairStyle(folder + "/DefaultNotificationViewStyle.asset");
             var parent = new GameObject("Notification default authoring", typeof(RectTransform));
             NotificationRowView template;
             try
             {
                 var row = CreateRowTemplate((RectTransform)parent.transform, style);
-                template = PrefabUtility.SaveAsPrefabAsset(row.gameObject, RowPath).GetComponent<NotificationRowView>();
+                template = PrefabUtility.SaveAsPrefabAsset(row.gameObject, folder + "/DefaultNotificationRow.prefab").GetComponent<NotificationRowView>();
             }
             finally { Object.DestroyImmediate(parent); }
-            CreateOrRepairPrefab(template);
+            CreateOrRepairPrefab(template, folder + "/DefaultNotificationList.prefab");
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
 
-        private static NotificationViewStyle CreateOrRepairStyle()
+        private static NotificationViewStyle CreateOrRepairStyle(string path)
         {
             NotificationViewStyle style =
-                AssetDatabase.LoadAssetAtPath<NotificationViewStyle>(StylePath);
+                AssetDatabase.LoadAssetAtPath<NotificationViewStyle>(path);
             if (style == null)
             {
                 style = ScriptableObject.CreateInstance<NotificationViewStyle>();
-                AssetDatabase.CreateAsset(style, StylePath);
+                AssetDatabase.CreateAsset(style, path);
             }
 
             style.Configure(
@@ -49,11 +57,12 @@ namespace Deucarian.Notifications.Editor
                 new Color(0.20f, 0.80f, 0.45f, 1f),
                 new Color(1f, 0.70f, 0.15f, 1f),
                 new Color(1f, 0.25f, 0.20f, 1f));
+            style.ConfigureSurface(DeucarianBuiltinColorRoleIds.Surface, .12f);
             EditorUtility.SetDirty(style);
             return style;
         }
 
-        private static void CreateOrRepairPrefab(NotificationRowView template)
+        private static void CreateOrRepairPrefab(NotificationRowView template, string path)
         {
             GameObject root = new GameObject(
                 "Default Notification List",
@@ -83,7 +92,7 @@ namespace Deucarian.Notifications.Editor
                 serialized.FindProperty("useProjectRowPrefab").boolValue = true;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
 
-                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                PrefabUtility.SaveAsPrefabAsset(root, path);
             }
             finally
             {
@@ -100,7 +109,7 @@ namespace Deucarian.Notifications.Editor
                 typeof(ContentSizeFitter));
             RectTransform rect = (RectTransform)value.transform;
             rect.SetParent(root, false);
-            rect.sizeDelta = new Vector2(620f, 0f);
+            rect.sizeDelta = new Vector2(1400f, 0f);
 
             VerticalLayoutGroup layout = value.GetComponent<VerticalLayoutGroup>();
             layout.childAlignment = TextAnchor.UpperLeft;
@@ -128,15 +137,16 @@ namespace Deucarian.Notifications.Editor
                 typeof(LayoutElement),
                 typeof(NotificationRowView),
                 typeof(NotificationRowDecoration));
+            row.SetActive(false);
             RectTransform rect = (RectTransform)row.transform;
             rect.SetParent(root, false);
-            rect.sizeDelta = new Vector2(620f, 132f);
+            rect.sizeDelta = new Vector2(1400f, 108f);
             Image background = row.GetComponent<Image>();
             background.color = new Color(0.07f, 0.08f, 0.10f, 0.92f);
             background.raycastTarget = false;
             background.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(Root + "/CardSurface.png");
             background.type = Image.Type.Sliced;
-            row.GetComponent<LayoutElement>().preferredHeight = 132f;
+            row.GetComponent<LayoutElement>().preferredHeight = 108f;
             var rim = CreateImage(rect, "Border", Vector2.zero, Vector2.zero);
             rim.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(Root + "/CardBorder.png");
             rim.type = Image.Type.Sliced;
@@ -150,13 +160,44 @@ namespace Deucarian.Notifications.Editor
             accent.sprite = LoadIcon("info");
             row.GetComponent<NotificationRowDecoration>().Configure(accent, rim, accent.sprite,
                 LoadIcon("circle-check"), LoadIcon("triangle-alert"), LoadIcon("circle-x"));
-            TextMeshProUGUI title = CreateText(rect, "Title", 24f, FontStyles.Bold, -24f, 490f, 32f);
-            TextMeshProUGUI body = CreateText(rect, "Body", 23f, FontStyles.Normal, -66f, 490f, 42f);
-            title.rectTransform.anchoredPosition = new Vector2(102f, -24f);
-            body.rectTransform.anchoredPosition = new Vector2(102f, -66f);
+            TextMeshProUGUI title = CreateText(rect, "Title", 24f, FontStyles.Bold, -20f, 1100f, 28f);
+            TextMeshProUGUI body = CreateText(rect, "Body", 23f, FontStyles.Normal, -58f, 1100f, 30f);
+            title.rectTransform.anchoredPosition = new Vector2(102f, -20f);
+            body.rectTransform.anchoredPosition = new Vector2(102f, -58f);
+            CreateResolveButton(rect);
             row.GetComponent<NotificationRowView>().Configure(title, body, accent, style, stretchSeverity: false);
             row.SetActive(false);
             return row.GetComponent<NotificationRowView>();
+        }
+
+        private static void CreateResolveButton(RectTransform row)
+        {
+            var image = CreateImage(row, "Resolve", new Vector2(-28, 0), new Vector2(128, 54));
+            var rect = image.rectTransform;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1, .5f);
+            image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(Root + "/CardSurface.png");
+            image.type = Image.Type.Sliced;
+            image.color = Color.white;
+            var button = image.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            var colors = image.gameObject.AddComponent<DeucarianSelectableThemeColors>();
+            DeucarianColorRole Role(string id) => AssetDatabase.LoadAssetAtPath<DeucarianColorRole>(
+                "Packages/com.deucarian.theming/Runtime/Resources/Deucarian/Theming/Visual/Defaults/Roles/" + id + ".asset");
+            colors.NormalRole = Role(DeucarianBuiltinColorRoleIds.UiNormal);
+            colors.HighlightedRole = Role(DeucarianBuiltinColorRoleIds.UiHighlighted);
+            colors.PressedRole = Role(DeucarianBuiltinColorRoleIds.UiPressed);
+            colors.SelectedRole = Role(DeucarianBuiltinColorRoleIds.UiSelected);
+            colors.DisabledRole = Role(DeucarianBuiltinColorRoleIds.UiDisabled);
+            var label = CreateText(rect, "Label", 23, FontStyles.Normal, 0, 128, 54);
+            label.text = "Resolve";
+            label.alignment = TextAlignmentOptions.Center;
+            label.rectTransform.anchorMin = Vector2.zero;
+            label.rectTransform.anchorMax = Vector2.one;
+            label.rectTransform.offsetMin = label.rectTransform.offsetMax = Vector2.zero;
+            var labelColor = label.gameObject.AddComponent<DeucarianGraphicThemeColor>();
+            labelColor.ColorRole = Role(DeucarianBuiltinColorRoleIds.TextPrimary);
+            row.gameObject.AddComponent<NotificationRowAction>().Configure(button, colors, labelColor);
+            image.gameObject.SetActive(false);
         }
 
         private static Image CreateImage(
@@ -210,9 +251,9 @@ namespace Deucarian.Notifications.Editor
             return text;
         }
 
-        private static void EnsureFolders()
+        private static void EnsureFolders(string folder)
         {
-            string[] parts = Root.Split('/');
+            string[] parts = folder.Split('/');
             string current = parts[0];
             for (int i = 1; i < parts.Length; i++)
             {

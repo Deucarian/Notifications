@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace Deucarian.Notifications.Unity
 {
     /// <summary>Bounded, keyed presentation. Exiting rows keep their slot until the transition finishes.</summary>
-    public sealed class NotificationListView : MonoBehaviour, INotificationListView, INotificationPresentationTarget
+    public sealed class NotificationListView : MonoBehaviour, INotificationListView, INotificationPresentationTarget, INotificationResolutionView
     {
         private sealed class Slot
         {
@@ -33,6 +33,14 @@ namespace Deucarian.Notifications.Unity
         private TMP_Text overflow;
         private readonly DeucarianLayoutTransition overflowMotion = new DeucarianLayoutTransition();
         private bool reconciling;
+        private Action<NotificationId> resolve;
+        public void BindResolution(Action<NotificationId> handler)
+        {
+            resolve = handler;
+            var group = GetComponent<CanvasGroup>();
+            if (group != null) group.interactable = group.blocksRaycasts = handler != null;
+            foreach (var slot in slots) slot.Row.BindResolution(handler);
+        }
         private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
 #if UNITY_EDITOR
         internal bool EditorPreview { get; set; }
@@ -174,6 +182,7 @@ namespace Deucarian.Notifications.Unity
                 row.gameObject.SetActive(true);
                 row.name = "Notification " + item.Id.Value;
                 row.Render(item);
+                row.BindResolution(resolve);
                 var motion = new NotificationRowMotion(row);
                 slots.Add(new Slot { Row = row, Motion = motion });
                 row.AppearanceChanged += Layout;

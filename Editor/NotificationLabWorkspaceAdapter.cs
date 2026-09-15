@@ -36,7 +36,7 @@ namespace Deucarian.Notifications.Editor
             BindComposer();
             BindAppearance();
             BindAudio();
-            preview = new NotificationRuntimePreview(view);
+            preview = new NotificationRuntimePreview(view, resolve: id => { host.Session?.Resolve(id); Refresh(); });
             var replay = DeucarianEditorWorkspaceControls.IconButton("Replay entrance", DeucarianEditorIconIds.Play,
                 preview.Replay);
             replay.name = "motion-preview-play";

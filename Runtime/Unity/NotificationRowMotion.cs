@@ -9,10 +9,12 @@ namespace Deucarian.Notifications.Unity
         private readonly NotificationRowTransition transition = new NotificationRowTransition();
         private readonly RectTransform rect;
         private readonly CanvasGroup group;
+        private readonly NotificationRowView row;
         private readonly DeucarianLayoutTransition layout = new DeucarianLayoutTransition();
 
         public NotificationRowMotion(NotificationRowView row)
         {
+            this.row = row;
             rect = (RectTransform)row.transform;
             CanvasGroup existing = row.GetComponent<CanvasGroup>();
             group = existing != null ? existing : row.gameObject.AddComponent<CanvasGroup>();
@@ -43,6 +45,7 @@ namespace Deucarian.Notifications.Unity
         {
             if (rect == null || group == null) return;
             group.alpha = transition.Alpha;
+            group.interactable = group.blocksRaycasts = transition.IsShowing && transition.Alpha > .99f && row.HasResolutionAction;
             rect.localScale = Vector3.one * transition.Scale;
             rect.anchoredPosition = layout.Current + transition.Offset;
         }

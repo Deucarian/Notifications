@@ -9,6 +9,7 @@ namespace Deucarian.Notifications
         private readonly NotificationEpisodeController episodes;
         private readonly NotificationPresenter presenter;
         private readonly INotificationDefinitions definitions;
+        private readonly INotificationResolutionView resolutionView;
         private bool disposed;
 
         public NotificationService(INotificationClock clock = null,
@@ -20,7 +21,8 @@ namespace Deucarian.Notifications
             episodes = new NotificationEpisodeController(store, clock ?? new StopwatchNotificationClock());
             if (view == null) return;
             presenter = new NotificationPresenter(store, view);
-            try { presenter.Activate(); }
+            resolutionView = view as INotificationResolutionView;
+            try { resolutionView?.BindResolution(episodes.Resolve); presenter.Activate(); }
             catch { Dispose(); throw; }
         }
 
@@ -67,6 +69,7 @@ namespace Deucarian.Notifications
         {
             if (disposed) return;
             disposed = true;
+            resolutionView?.BindResolution(null);
             presenter?.Dispose();
             episodes.Dispose();
             store.Dispose();
