@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5587609664393900494
+--- !u!1 &2539540663832265237
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,81 +8,77 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 29598162968721354}
-  - component: {fileID: 4698908270164007748}
-  - component: {fileID: 5395268014880642650}
+  - component: {fileID: 7605636049602770260}
+  - component: {fileID: 181056057179907753}
+  - component: {fileID: 6379815790284748344}
   m_Layer: 0
-  m_Name: DefaultNotificationList
+  m_Name: Rows
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &29598162968721354
+--- !u!224 &7605636049602770260
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5587609664393900494}
+  m_GameObject: {fileID: 2539540663832265237}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7333632821220083926}
-  m_Father: {fileID: 0}
+  - {fileID: 2562577338829996223}
+  m_Father: {fileID: 1587372403571623114}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.05, y: 0.5}
+  m_AnchorMax: {x: 0.05, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!225 &4698908270164007748
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5587609664393900494}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
-  m_IgnoreParentGroups: 0
---- !u!114 &5395268014880642650
+  m_SizeDelta: {x: 1400, y: 0}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &181056057179907753
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5587609664393900494}
-  m_Enabled: 1
+  m_GameObject: {fileID: 2539540663832265237}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 479071cecdbed394d977a75b0273a3e8, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Deucarian.Notifications.Unity::Deucarian.Notifications.Unity.NotificationListView
-  container: {fileID: 7333632821220083926}
-  rowPrefab: {fileID: 7890760978835025383, guid: f8302536b1c9aea4db201acdb7c6f53a, type: 3}
-  useProjectRowPrefab: 1
-  normalizedX: 0.05
-  normalizedY: 0.5
-  relativeToSafeArea: 1
-  presentation:
-    maxVisible: 5
-    show: 1
-    hide: 1
-    showSeconds: 0.18
-    hideSeconds: 0.14
-    instantLayout: 0
-    reflowSeconds: 0.18
-    lazyFollow: 0
-    follow:
-      positionDeadZone: 0.025
-      rotationDeadZone: 3
-      smoothingSeconds: 0.18
-  spacing: 10
---- !u!1 &6389491861480653038
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 10
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
+--- !u!114 &6379815790284748344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2539540663832265237}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
+--- !u!1 &4840753566740719642
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -90,9 +86,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7295553513123222146}
-  - component: {fileID: 9062097003434831056}
-  - component: {fileID: 3775546511612739456}
+  - component: {fileID: 2562577338829996223}
+  - component: {fileID: 1986326877495016277}
+  - component: {fileID: 5116635945846962543}
   m_Layer: 0
   m_Name: Notification Overflow
   m_TagString: Untagged
@@ -100,40 +96,40 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!224 &7295553513123222146
+--- !u!224 &2562577338829996223
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6389491861480653038}
+  m_GameObject: {fileID: 4840753566740719642}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 7333632821220083926}
+  m_Father: {fileID: 7605636049602770260}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 620, y: 32}
+  m_SizeDelta: {x: 1400, y: 32}
   m_Pivot: {x: 0, y: 1}
---- !u!222 &9062097003434831056
+--- !u!222 &1986326877495016277
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6389491861480653038}
+  m_GameObject: {fileID: 4840753566740719642}
   m_CullTransparentMesh: 1
---- !u!114 &3775546511612739456
+--- !u!114 &5116635945846962543
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6389491861480653038}
+  m_GameObject: {fileID: 4840753566740719642}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
@@ -219,7 +215,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!1 &8657739413869073179
+--- !u!1 &7423247785577702259
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -227,73 +223,77 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7333632821220083926}
-  - component: {fileID: 6797221777635925419}
-  - component: {fileID: 6663558557789760213}
+  - component: {fileID: 1587372403571623114}
+  - component: {fileID: 3677187984884762645}
+  - component: {fileID: 8545853629750485460}
   m_Layer: 0
-  m_Name: Rows
+  m_Name: DefaultNotificationList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &7333632821220083926
+--- !u!224 &1587372403571623114
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8657739413869073179}
+  m_GameObject: {fileID: 7423247785577702259}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7295553513123222146}
-  m_Father: {fileID: 29598162968721354}
+  - {fileID: 7605636049602770260}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.05, y: 0.5}
-  m_AnchorMax: {x: 0.05, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 620, y: 0}
-  m_Pivot: {x: 0, y: 1}
---- !u!114 &6797221777635925419
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &3677187984884762645
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7423247785577702259}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
+--- !u!114 &8545853629750485460
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8657739413869073179}
-  m_Enabled: 0
+  m_GameObject: {fileID: 7423247785577702259}
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Script: {fileID: 11500000, guid: 479071cecdbed394d977a75b0273a3e8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 0
-  m_Spacing: 10
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 1
-  m_ChildControlHeight: 1
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
---- !u!114 &6663558557789760213
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8657739413869073179}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
-  m_HorizontalFit: 0
-  m_VerticalFit: 2
+  m_EditorClassIdentifier: Deucarian.Notifications.Unity::Deucarian.Notifications.Unity.NotificationListView
+  container: {fileID: 7605636049602770260}
+  rowPrefab: {fileID: 6548776718870220307, guid: f8302536b1c9aea4db201acdb7c6f53a, type: 3}
+  useProjectRowPrefab: 1
+  normalizedX: 0.05
+  normalizedY: 0.5
+  relativeToSafeArea: 1
+  presentation:
+    maxVisible: 5
+    show: 1
+    hide: 1
+    showSeconds: 0.18
+    hideSeconds: 0.14
+    instantLayout: 0
+    reflowSeconds: 0.18
+    lazyFollow: 0
+    follow:
+      positionDeadZone: 0.025
+      rotationDeadZone: 3
+      smoothingSeconds: 0.18
+  spacing: 10
