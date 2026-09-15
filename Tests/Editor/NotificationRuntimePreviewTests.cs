@@ -13,6 +13,37 @@ namespace Deucarian.Notifications.Tests
     {
         private sealed class Clock : INotificationClock { public double NowSeconds => 0; }
 
+        [Test]
+        public void RuntimePreviewDrawsVisibleNotificationPixels()
+        {
+            using var workspace = new DeucarianEditorLabWorkspace(new VisualElement(), "Test", "Notifications", "", () => { }, _ => { });
+            using var session = new NotificationLabSession(new Clock(), null);
+            using var preview = new NotificationRuntimePreview(workspace, autoAdvance: false);
+            var settings = NotificationPresentationSettings.Default;
+            settings.show = NotificationTransition.None;
+            preview.Configure(settings, null);
+            session.Show(NotificationLabSession.Example(NotificationSeverity.Warning), default);
+            preview.Render(session.Store.Snapshot);
+            preview.List.AdvancePreview(2);
+            preview.RenderFrame();
+            var texture = (RenderTexture)workspace.PreviewRoot.Q<UnityEngine.UIElements.Image>("notification-runtime-image").image;
+            var previous = RenderTexture.active;
+            var pixels = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+            try
+            {
+                RenderTexture.active = texture;
+                pixels.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+                pixels.Apply();
+                Assert.That(pixels.GetPixels32().Count(pixel => pixel.a > 32), Is.GreaterThan(1000),
+                    "The real row must produce visible pixels, not merely a non-null preview texture.");
+            }
+            finally
+            {
+                RenderTexture.active = previous;
+                UnityEngine.Object.DestroyImmediate(pixels);
+            }
+        }
+
         [TestCase(NotificationTransition.None)]
         [TestCase(NotificationTransition.Fade)]
         [TestCase(NotificationTransition.Scale)]

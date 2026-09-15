@@ -97,6 +97,8 @@ namespace Deucarian.Notifications.Editor
             if (prefab == null) { status.text = "The runtime notification prefab is missing. Repair the package view assets."; return; }
             if (TMPro.TMP_Settings.instance == null) { status.text = "Import TMP Essential Resources to preview the runtime notification."; return; }
             renderer = new PreviewRenderUtility();
+            // Preview cameras omit uGUI; a game camera renders the real Canvas in this isolated scene.
+            renderer.camera.cameraType = CameraType.Game;
             renderer.camera.orthographic = true;
             renderer.camera.nearClipPlane = .01f;
             renderer.camera.farClipPlane = 100;
