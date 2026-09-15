@@ -6,6 +6,7 @@ using UnityEngine.UI;
 namespace Deucarian.Notifications.Unity
 {
     /// <summary>Routes the default card's Resolve button to its explicitly bound lifecycle owner.</summary>
+    [ExecuteAlways]
     public sealed class NotificationRowAction : MonoBehaviour
     {
         [SerializeField] private Button button;

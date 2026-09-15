@@ -108,7 +108,7 @@ namespace Deucarian.Notifications.Tests
 
         private static DeucarianThemeStyle AlternateStyle(DeucarianThemeStyle original)
         {
-            foreach (string guid in AssetDatabase.FindAssets("t:DeucarianThemeStyle"))
+            foreach (string guid in AssetDatabase.FindAssets("t:DeucarianThemeStyle", new[] { "Packages/com.deucarian.theming" }))
             {
                 var candidate = AssetDatabase.LoadAssetAtPath<DeucarianThemeStyle>(AssetDatabase.GUIDToAssetPath(guid));
                 if (candidate != original) return candidate;
