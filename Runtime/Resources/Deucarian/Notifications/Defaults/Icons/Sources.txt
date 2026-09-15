@@ -1,0 +1,4 @@
+Lucide 1.22.0: info, circle-check, triangle-alert, circle-x.
+Unmodified raster exports of the icons used by the Deucarian Editor Notification Lab.
+Runtime notification severity assets; the editor package is not a runtime dependency.
+License: Lucide-LICENSE.txt.

@@ -1,10 +1,13 @@
 using System;
+using System.Collections;
 using System.Linq;
 using Deucarian.Editor;
 using Deucarian.Notifications.Editor;
 using Deucarian.Notifications.Unity;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
 namespace Deucarian.Notifications.Tests
@@ -12,6 +15,59 @@ namespace Deucarian.Notifications.Tests
     public sealed class NotificationRuntimePreviewTests
     {
         private sealed class Clock : INotificationClock { public double NowSeconds => 0; }
+        private sealed class PreviewLayoutWindow : EditorWindow { }
+
+        [UnityTest]
+        public IEnumerator RuntimePreviewUsesPaneWidthAtWideAndNarrowSizes()
+        {
+            var window = ScriptableObject.CreateInstance<PreviewLayoutWindow>();
+            try
+            {
+                window.position = new Rect(90, 90, 1460, 900);
+                window.Show();
+                using var workspace = new DeucarianEditorLabWorkspace(window.rootVisualElement, "Test", "Notifications", "", () => { }, _ => { });
+                using var session = new NotificationLabSession(new Clock(), null);
+                using var preview = new NotificationRuntimePreview(workspace, autoAdvance: false);
+                var settings = NotificationPresentationSettings.Default;
+                settings.show = NotificationTransition.None;
+                preview.Configure(settings, null);
+                session.Show(NotificationLabSession.Example(NotificationSeverity.Warning), default);
+                preview.Render(session.Store.Snapshot);
+                preview.RenderFrame();
+                var image = workspace.PreviewRoot.Q<UnityEngine.UIElements.Image>("notification-runtime-image");
+                // Drive the pane size explicitly: batch editors can keep native windows maximized.
+                image.parent.style.width = 720;
+                yield return WaitForPreviewLayout(image);
+                AssertPreviewAspect(image);
+                float wideWidth = image.contentRect.width;
+
+                image.parent.style.width = 400;
+                yield return WaitForPreviewLayout(image, wideWidth);
+                AssertPreviewAspect(image);
+                Assert.That(image.contentRect.width, Is.Not.EqualTo(wideWidth).Within(1));
+            }
+            finally { window.Close(); }
+        }
+
+        private static IEnumerator WaitForPreviewLayout(UnityEngine.UIElements.Image image, float previousWidth = -1)
+        {
+            double deadline = EditorApplication.timeSinceStartup + 3;
+            while ((image.contentRect.width <= 0 || Mathf.Approximately(image.contentRect.width, previousWidth))
+                && EditorApplication.timeSinceStartup < deadline) yield return null;
+            yield return null;
+            yield return null;
+        }
+
+        private static void AssertPreviewAspect(UnityEngine.UIElements.Image image)
+        {
+            Assert.That(image.image, Is.Not.Null);
+            Assert.That(image.worldBound.width, Is.GreaterThan(0));
+            float aspect = (float)image.image.height / image.image.width;
+            Assert.That(image.worldBound.height / image.worldBound.width, Is.EqualTo(aspect).Within(.01f),
+                "Runtime pixels must fill the pane with their aspect intact after workspace scaling.");
+            Assert.That(image.resolvedStyle.flexShrink, Is.Zero);
+            Assert.That(image.worldBound.width, Is.EqualTo(image.parent.worldBound.width).Within(2));
+        }
 
         [Test]
         public void RuntimePreviewDrawsVisibleNotificationPixels()

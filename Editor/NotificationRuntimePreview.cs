@@ -34,9 +34,13 @@ namespace Deucarian.Notifications.Editor
         {
             this.autoAdvance = autoAdvance;
             root = DeucarianEditorWorkspaceControls.Region("notification-runtime-preview", "dw-lab-preview");
+            root.style.flexShrink = 0;
             image = new UnityEngine.UIElements.Image { name = "notification-runtime-image", scaleMode = ScaleMode.ScaleToFit };
+            image.style.width = Length.Percent(100);
             image.style.height = 360;
-            image.style.flexGrow = 1;
+            image.style.flexGrow = 0;
+            image.style.flexShrink = 0;
+            image.RegisterCallback<GeometryChangedEvent>(OnImageGeometryChanged);
             root.Add(image);
             status = DeucarianEditorWorkspaceControls.Label("Runtime notification prefab", "dw-muted");
             root.Add(status);
@@ -52,7 +56,7 @@ namespace Deucarian.Notifications.Editor
         {
             var runtimeList = runtimeView as NotificationListView;
             if (runtimeList == null && runtimeView != null) runtimeList = runtimeView.GetComponentInChildren<NotificationListView>(true);
-            var source = runtimeList != null ? runtimeList.RowTemplate : null;
+            var source = runtimeList != null ? runtimeList.RowTemplate : NotificationViewDefaults.ResolveRowPrefab();
             if (renderer == null || source != sourceTemplate) Create(source);
             if (list == null) return;
             var next = value.Sanitized();
@@ -93,7 +97,7 @@ namespace Deucarian.Notifications.Editor
         {
             ReleaseRenderer();
             sourceTemplate = source;
-            var prefab = Resources.Load<GameObject>("Deucarian/Notifications/Defaults/DefaultNotificationList");
+            var prefab = NotificationViewDefaults.LoadListPrefab();
             if (prefab == null) { status.text = "The runtime notification prefab is missing. Repair the package view assets."; return; }
             if (TMPro.TMP_Settings.instance == null) { status.text = "Import TMP Essential Resources to preview the runtime notification."; return; }
             renderer = new PreviewRenderUtility();
@@ -152,8 +156,23 @@ namespace Deucarian.Notifications.Editor
             renderer.Render(true);
             image.image = renderer.EndPreview();
             HasRenderedFrame = true;
-            image.style.height = Mathf.Min(height, 520);
+            FitImageToWidth();
             image.MarkDirtyRepaint();
+        }
+
+        private void OnImageGeometryChanged(GeometryChangedEvent evt)
+        {
+            if (!Mathf.Approximately(evt.newRect.width, evt.oldRect.width)) FitImageToWidth();
+        }
+
+        private void FitImageToWidth()
+        {
+            if (image.image == null || image.image.width <= 0) return;
+            float width = image.contentRect.width;
+            if (float.IsNaN(width) || float.IsInfinity(width) || width <= 0) width = Width;
+            // Workspace layout uses logical units, which can differ from the runtime texture's pixels.
+            // Fit the texture's aspect to this pane; the containing page scrolls for taller message stacks.
+            image.style.height = width * image.image.height / image.image.width;
         }
 
         private void ReleaseRenderer()
@@ -169,6 +188,7 @@ namespace Deucarian.Notifications.Editor
             if (disposed) return;
             disposed = true;
             EditorApplication.update -= Tick;
+            image.UnregisterCallback<GeometryChangedEvent>(OnImageGeometryChanged);
             ReleaseRenderer();
         }
     }

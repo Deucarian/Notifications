@@ -15,9 +15,11 @@ namespace Deucarian.Notifications.Unity
         private TextMetrics titleMetrics, bodyMetrics;
         private bool measured;
         private readonly bool supported;
+        private readonly bool stretchSeverity;
 
-        internal NotificationRowLayout(RectTransform row, TMP_Text title, TMP_Text body, Graphic severity)
+        internal NotificationRowLayout(RectTransform row, TMP_Text title, TMP_Text body, Graphic severity, bool stretchSeverity = true)
         {
+            this.stretchSeverity = stretchSeverity;
             this.row = row; this.title = title; this.body = body;
             titleRect = title != null ? title.rectTransform : null;
             bodyRect = body != null ? body.rectTransform : null;
@@ -37,6 +39,7 @@ namespace Deucarian.Notifications.Unity
 
         private NotificationRowLayout(RectTransform row, TMP_Text title, TMP_Text body, Graphic severity, NotificationRowLayout source)
         {
+            stretchSeverity = source.stretchSeverity;
             this.row = row; this.title = title; this.body = body;
             titleRect = title != null ? title.rectTransform : null;
             bodyRect = body != null ? body.rectTransform : null;
@@ -67,7 +70,7 @@ namespace Deucarian.Notifications.Unity
             bodyRect.anchoredPosition = nextBodyPosition;
             row.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
             if (element != null) element.preferredHeight = Mathf.Max(preferredHeight, height);
-            if (severityRect != null && severityRect.anchorMin.y == severityRect.anchorMax.y)
+            if (stretchSeverity && severityRect != null && severityRect.anchorMin.y == severityRect.anchorMax.y)
                 severityRect.sizeDelta = new Vector2(severitySize.x, severitySize.y + height - rowSize.y);
             return changed;
         }

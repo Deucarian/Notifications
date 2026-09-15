@@ -17,6 +17,7 @@ namespace Deucarian.Notifications.Unity
         [SerializeField] private Color errorColor = new Color(1f, 0.25f, 0.2f, 1f);
         [SerializeField] private NotificationViewStyle style;
         [SerializeField] private Graphic backgroundGraphic;
+        [SerializeField] private bool stretchSeverityWithRow = true;
         private NotificationSeverity currentSeverity;
         private NotificationRowVisualBaseline baseline;
         private NotificationRowLayout layout;
@@ -41,12 +42,14 @@ namespace Deucarian.Notifications.Unity
             TMP_Text title,
             TMP_Text body,
             Graphic severity,
-            NotificationViewStyle viewStyle = null)
+            NotificationViewStyle viewStyle = null,
+            bool stretchSeverity = true)
         {
             titleText = title;
             bodyText = body;
             severityGraphic = severity;
             style = viewStyle;
+            stretchSeverityWithRow = stretchSeverity;
             baseline = null;
             layout = null;
             DisableRaycasts();
@@ -101,6 +104,7 @@ namespace Deucarian.Notifications.Unity
             layout?.Restore();
             var appearance = NotificationRowAppearance.Resolve(theme, style, currentSeverity, baseline.Colors(ResolveSeverityColor(currentSeverity)));
             if (severityGraphic != null) severityGraphic.color = appearance.Severity;
+            GetComponent<NotificationRowDecoration>()?.Apply(currentSeverity, appearance.Severity);
             if (backgroundGraphic != null) backgroundGraphic.color = appearance.Surface;
             if (titleText != null) titleText.color = appearance.Title;
             if (bodyText != null) bodyText.color = appearance.Body;
@@ -117,7 +121,7 @@ namespace Deucarian.Notifications.Unity
         {
             if (backgroundGraphic == null) backgroundGraphic = GetComponent<Graphic>();
             if (baseline == null) baseline = new NotificationRowVisualBaseline(backgroundGraphic, titleText, bodyText);
-            if (layout == null) layout = new NotificationRowLayout(transform as RectTransform, titleText, bodyText, severityGraphic);
+            if (layout == null) layout = new NotificationRowLayout(transform as RectTransform, titleText, bodyText, severityGraphic, stretchSeverityWithRow);
         }
 
         internal void CopyAuthoredBaselineFrom(NotificationRowView template)
@@ -138,6 +142,7 @@ namespace Deucarian.Notifications.Unity
             layout?.Restore();
             layout?.Fit(true);
             if (severityGraphic != null) severityGraphic.color = ResolveSeverityColor(currentSeverity);
+            GetComponent<NotificationRowDecoration>()?.Apply(currentSeverity, ResolveSeverityColor(currentSeverity));
             AppearanceChanged?.Invoke();
         }
 
