@@ -18,6 +18,7 @@ namespace Deucarian.Notifications.Tests
         private string theme, family, palette, library, style;
         private DeucarianThemeMode mode;
         private ComposerPreviewScope composerPreview;
+        private string temporaryStylePath;
         private sealed class Clock : INotificationClock { public double NowSeconds => 0; }
 
         [SetUp]
@@ -43,6 +44,8 @@ namespace Deucarian.Notifications.Tests
             DeucarianThemingEditorSettings.ActiveThemeMode = mode;
             composerPreview?.Dispose();
             composerPreview = null;
+            if (!string.IsNullOrEmpty(temporaryStylePath)) AssetDatabase.DeleteAsset(temporaryStylePath);
+            temporaryStylePath = null;
         }
 
         [TestCase(false)]
@@ -106,15 +109,16 @@ namespace Deucarian.Notifications.Tests
             Assert.That(composed == null, Is.True);
         }
 
-        private static DeucarianThemeStyle AlternateStyle(DeucarianThemeStyle original)
+        private DeucarianThemeStyle AlternateStyle(DeucarianThemeStyle original)
         {
-            foreach (string guid in AssetDatabase.FindAssets("t:DeucarianThemeStyle", new[] { "Packages/com.deucarian.theming" }))
-            {
-                var candidate = AssetDatabase.LoadAssetAtPath<DeucarianThemeStyle>(AssetDatabase.GUIDToAssetPath(guid));
-                if (candidate != original) return candidate;
-            }
-            Assert.Fail("The bundled styles must include an alternate visual style.");
-            return null;
+            // A clean installation ships one materialized style. Other built-in presets
+            // become project assets when selected; do not depend on a user's existing assets.
+            var candidate = DeucarianThemeStylePresets.CreateRuntimeStyle(DeucarianThemeStyleIds.MaterialDark);
+            candidate.hideFlags = HideFlags.None;
+            temporaryStylePath = "Assets/NotificationPreviewStyle-" + Guid.NewGuid().ToString("N") + ".asset";
+            AssetDatabase.CreateAsset(candidate, temporaryStylePath);
+            Assert.That(candidate, Is.Not.SameAs(original));
+            return candidate;
         }
 
         /// <summary>Exact editor-only test bridge; preserve another package's active user preview without widening its production API.</summary>

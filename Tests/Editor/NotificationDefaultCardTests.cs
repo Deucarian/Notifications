@@ -61,6 +61,29 @@ namespace Deucarian.Notifications.Tests
         }
 
         [Test]
+        public void ResolveButtonRetainsTheRowsLightThemeWhenRevealed()
+        {
+            var instance = Object.Instantiate(NotificationViewDefaults.LoadListPrefab());
+            try
+            {
+                var view = instance.GetComponent<NotificationListView>();
+                using var service = new NotificationService(view: view, definitions: new RegisteredTestDefinitions("light"));
+                service.Show(new NotificationDefinition("light", NotificationSeverity.Info, "Light", "Body"));
+                var row = view.GetComponentInChildren<NotificationRowView>();
+                var light = DeucarianVisualDefaults.LoadFamily().LightTheme;
+                row.ThemeOverride = light;
+                row.ApplyTheme(light);
+                var button = row.GetComponent<NotificationRowAction>().Button;
+                button.gameObject.SetActive(false);
+                button.gameObject.SetActive(true);
+                Assert.That(button.GetComponent<DeucarianSelectableThemeColors>().ThemeOverride, Is.SameAs(light));
+                Assert.That(button.GetComponentInChildren<TMPro.TMP_Text>().color,
+                    Is.EqualTo(light.ColorPalette.GetColorById(DeucarianBuiltinColorRoleIds.TextPrimary)));
+            }
+            finally { Object.DestroyImmediate(instance); }
+        }
+
+        [Test]
         public void TimedAndReadOnlyCardsHaveNoResolveAction()
         {
             var instance = Object.Instantiate(NotificationViewDefaults.LoadListPrefab());
