@@ -21,6 +21,18 @@ namespace Deucarian.Notifications.Tests
             NotificationSeverity.Warning, "Registered warning", "Body", feedbackRoleId: "warning");
 
         [Test]
+        public void BasicSampleDeclarationsCanBeImportedByTheStrictAuthoringParser()
+        {
+            var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(NotificationStore).Assembly);
+            string directory = System.IO.Path.Combine(package.resolvedPath, "Samples~/Notification List Basics/Definitions/Editor");
+            var paths = System.IO.Directory.GetFiles(directory, "*.definition.cs");
+            Assert.That(paths.Length, Is.EqualTo(10));
+            var schema = new Deucarian.Notifications.Editor.Definitions.NotificationDefinitionSchema();
+            foreach (var path in paths)
+                Assert.DoesNotThrow(() => Deucarian.Editor.Definitions.DeucarianDefinitionSource.Read(schema, System.IO.File.ReadAllText(path)), path);
+        }
+
+        [Test]
         public void MissingCatalogRejectsEveryPublicActivationPath()
         {
             using var store = new NotificationStore();

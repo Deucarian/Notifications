@@ -1,5 +1,5 @@
 // <deucarian-definition schema="notifications" />
-// Editable declaration. Use the Notification Lab or edit the values below.
+// Editable declaration. Use the package definition editor or edit the values below.
 namespace Deucarian.ProjectDefinitions.Definition_notifications
 {
     public static class Definition_PlaygroundOverflow3
