@@ -1,0 +1,48 @@
+using System;
+using Deucarian.Theming;
+using UnityEngine;
+
+namespace Deucarian.Notifications.Unity
+{
+    /// <summary>Add to a configured notification list prefab once; callers use NotificationManager.</summary>
+    [DefaultExecutionOrder(-1000), DisallowMultipleComponent, RequireComponent(typeof(NotificationListView))]
+    public sealed class NotificationHost : MonoBehaviour
+    {
+        [SerializeField] private bool registerAsDefault = true;
+        [SerializeField] private DeucarianThemeAudioPlayer audioPlayer;
+        [SerializeField] private NotificationCatalogAsset catalog;
+        private IDisposable registration;
+        private NotificationService service;
+        public NotificationService Service => service ??
+            throw new InvalidOperationException("The notification host must be enabled.");
+
+        private void OnEnable()
+        {
+            if (TMPro.TMP_Settings.instance == null) throw new InvalidOperationException("NotificationHost '" + name + "' needs TextMeshPro settings. Import TMP Essential Resources from Unity's TextMeshPro menu, then enable this host again.");
+            service = new NotificationService(new UnityUnscaledNotificationClock(),
+                new Feedback(this), GetComponent<NotificationListView>(),
+                catalog != null ? catalog : Resources.Load<NotificationCatalogAsset>(NotificationCatalogAsset.DefaultResourcePath));
+            try { if (registerAsDefault) registration = NotificationManager.Bind(service); }
+            catch { service.Dispose(); service = null; throw; }
+        }
+
+        private void Update() => service?.Tick();
+        private void OnDisable()
+        {
+            registration?.Dispose();
+            registration = null;
+            service?.Dispose();
+            service = null;
+            GetComponent<NotificationListView>().Render(NotificationSnapshot.Empty);
+        }
+
+        private sealed class Feedback : INotificationFeedbackSink
+        {
+            private readonly NotificationHost host;
+            public Feedback(NotificationHost host) { this.host = host; }
+            public bool TryRequestFeedback(NotificationFeedbackRequest request) =>
+                host.audioPlayer != null ? host.audioPlayer.PlayRoleById(request.RoleId) :
+                ThemeAudio.IsConfigured && ThemeAudio.Player.PlayRoleById(request.RoleId);
+        }
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Deucarian.Notifications.Samples.SimpleUsage",
+  "references": [
+    "Deucarian.Notifications"
+  ],
+  "autoReferenced": false,
+  "noEngineReferences": false
+}

@@ -2,6 +2,8 @@ using Deucarian.Notifications.Editor;
 using Deucarian.Notifications.Unity;
 using NUnit.Framework;
 using UnityEngine;
+using TMPro;
+using UnityEditor;
 
 namespace Deucarian.Notifications.Tests
 {
@@ -29,6 +31,11 @@ namespace Deucarian.Notifications.Tests
                     Assert.AreEqual(expected.anchorMin, actual.anchorMin, label);
                     Assert.AreEqual(expected.anchorMax, actual.anchorMax, label);
                     Assert.AreEqual(expected.pivot, actual.pivot, label);
+                    var bundledFont = actual.GetComponent<TMP_Text>().font;
+                    Assert.That(bundledFont, Is.Not.Null);
+                    Assert.That(AssetDatabase.GetAssetPath(bundledFont),
+                        Is.EqualTo("Packages/com.deucarian.theming/Runtime/Fonts/Inter-Regular SDF.asset"));
+                    Assert.That(expected.GetComponent<TMP_Text>().font, Is.SameAs(bundledFont));
                 }
             }
             finally { Object.DestroyImmediate(root); }

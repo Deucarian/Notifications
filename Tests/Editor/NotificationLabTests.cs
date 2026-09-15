@@ -214,6 +214,25 @@ namespace Deucarian.Notifications.Tests
         }
 
         [Test]
+        public void ExplicitAuditionDoesNotUnmuteAutomaticPingsOrCreateMessages()
+        {
+            var preview = new Preview();
+            using (var audio = new NotificationLabAudio(preview))
+            using (var session = new NotificationLabSession(new Clock(), audio))
+            {
+                audio.Configure(PaletteSet(out _, out _), DeucarianAudioExperience.XR, false);
+                Assert.IsTrue(audio.TryPreviewFeedback(Request()));
+                Assert.IsFalse(audio.Enabled);
+                Assert.AreEqual(1, preview.Plays);
+                Assert.AreEqual(0, session.Store.Snapshot.Count);
+                Assert.AreEqual(0, session.PingCount);
+                session.Show(Warning(), new NotificationTimingPolicy(0, 0));
+                Assert.AreEqual(1, session.PingCount);
+                Assert.AreEqual(1, preview.Plays);
+            }
+        }
+
+        [Test]
         public void LabIsDiscoverableUnderExperienceInControlCenter()
         {
             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(

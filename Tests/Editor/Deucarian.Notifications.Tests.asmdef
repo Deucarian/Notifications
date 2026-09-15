@@ -8,7 +8,9 @@
     "Deucarian.Notifications.Unity",
     "Deucarian.Theming",
     "Deucarian.Theming.Editor",
-    "Deucarian.Editor"
+    "Deucarian.Editor",
+    "Unity.TextMeshPro",
+    "UnityEngine.UI"
   ],
   "includePlatforms": [
     "Editor"

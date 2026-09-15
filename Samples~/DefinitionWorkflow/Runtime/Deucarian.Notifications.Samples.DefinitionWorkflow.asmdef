@@ -1,0 +1,7 @@
+{
+  "name": "Deucarian.Notifications.Samples.DefinitionWorkflow",
+  "references": [
+    "Deucarian.Notifications",
+    "Deucarian.Notifications.Unity"
+  ]
+}

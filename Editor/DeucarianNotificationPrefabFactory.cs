@@ -13,6 +13,7 @@ namespace Deucarian.Notifications.Editor
             "Packages/com.deucarian.notifications/Runtime/Resources/Deucarian/Notifications/Defaults";
         private const string StylePath = Root + "/DefaultNotificationViewStyle.asset";
         private const string PrefabPath = Root + "/DefaultNotificationList.prefab";
+        private const string DefaultFontPath = "Packages/com.deucarian.theming/Runtime/Fonts/Inter-Regular SDF.asset";
 
         [MenuItem("Assets/Create/Deucarian/Notifications/Repair Default View Assets")]
         public static void GenerateDefaults()
@@ -116,16 +117,16 @@ namespace Deucarian.Notifications.Editor
                 typeof(NotificationRowView));
             RectTransform rect = (RectTransform)row.transform;
             rect.SetParent(root, false);
-            rect.sizeDelta = new Vector2(620f, 82f);
+            rect.sizeDelta = new Vector2(620f, 86f);
             Image background = row.GetComponent<Image>();
             background.color = new Color(0.07f, 0.08f, 0.10f, 0.92f);
             background.raycastTarget = false;
-            row.GetComponent<LayoutElement>().preferredHeight = 82f;
+            row.GetComponent<LayoutElement>().preferredHeight = 86f;
 
-            Image accent = CreateImage(rect, "Severity", new Vector2(0f, 0f), new Vector2(6f, 82f));
-            // Nine-unit vertical padding, a 28-unit title and a four-unit gap before the instruction.
-            TextMeshProUGUI title = CreateText(rect, "Title", 24f, FontStyles.Bold, -9f, 590f, 28f);
-            TextMeshProUGUI body = CreateText(rect, "Body", 20f, FontStyles.Normal, -41f, 590f, 32f);
+            Image accent = CreateImage(rect, "Severity", new Vector2(0f, 0f), new Vector2(6f, 86f));
+            // Nine-unit vertical padding, a 32-unit title and a four-unit gap before the instruction.
+            TextMeshProUGUI title = CreateText(rect, "Title", 24f, FontStyles.Bold, -9f, 590f, 32f);
+            TextMeshProUGUI body = CreateText(rect, "Body", 20f, FontStyles.Normal, -45f, 590f, 32f);
             row.GetComponent<NotificationRowView>().Configure(title, body, accent, style);
             row.SetActive(false);
             return row.GetComponent<NotificationRowView>();
@@ -172,6 +173,8 @@ namespace Deucarian.Notifications.Editor
             rect.anchoredPosition = new Vector2(18f, top);
             rect.sizeDelta = new Vector2(width, height);
             TextMeshProUGUI text = value.GetComponent<TextMeshProUGUI>();
+            text.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DefaultFontPath);
+            if (text.font == null) throw new System.InvalidOperationException("Theming's bundled Inter font is required to generate notification defaults.");
             text.fontSize = size;
             text.fontStyle = style;
             text.color = Color.white;

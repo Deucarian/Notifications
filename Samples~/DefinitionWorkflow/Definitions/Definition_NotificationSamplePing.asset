@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f33eb9da1475445e9276da55ad623321, type: 3}
+  m_Name: Definition_NotificationSamplePing
+  m_EditorClassIdentifier: Deucarian.Theming::Deucarian.Theming.DeucarianAudioRole
+  id: 1edff07cb0ee4c5b8f184be0dcc4b22f
+  displayName: NotificationSamplePing
+  category: Project
+  description: Project sound
+  defaultCue:
+    clip: {fileID: 8300000, guid: 038ec57830149ad468505a76fd308a06, type: 3}
+    variants: []
+    volume: 0.5
+    minimumPitch: 1
+    maximumPitch: 1
+    intentionalSilence: 0
+  isCoreRole: 0

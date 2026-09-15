@@ -13,11 +13,14 @@
     "Deucarian.Notifications.Editor"
   ],
   "sampleAssemblies": [
-    "Deucarian.Notifications.Samples.Basic"
+    "Deucarian.Notifications.Samples.Basic",
+    "Deucarian.Notifications.Samples.DefinitionWorkflow",
+    "Deucarian.Notifications.Samples.SimpleUsage",
+    "Deucarian.Samples.Notifications.DefinitionDeclarations"
   ],
   "testAssemblies": [
-    "Deucarian.Notifications.Tests",
-    "Deucarian.Notifications.PlayModeTests"
+    "Deucarian.Notifications.PlayModeTests",
+    "Deucarian.Notifications.Tests"
   ],
   "requiredDependencies": [
     "com.deucarian.common",

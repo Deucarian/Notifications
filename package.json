@@ -1,7 +1,7 @@
 {
   "name": "com.deucarian.notifications",
   "displayName": "Deucarian Notifications",
-  "version": "0.3.3",
+  "version": "0.5.0",
   "unity": "2022.3",
   "description": "Keyed notification lifecycle, batched semantic feedback, and reusable Unity presenters.",
   "license": "MIT",
@@ -22,8 +22,8 @@
   "dependencies": {
     "com.deucarian.common": "0.2.1",
     "com.deucarian.diagnostics": "0.1.6",
-    "com.deucarian.editor": "1.7.0",
-    "com.deucarian.theming": "1.4.2",
+    "com.deucarian.editor": "1.13.0",
+    "com.deucarian.theming": "1.9.0",
     "com.deucarian.ui": "0.3.0",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.ugui": "1.0.0"
@@ -33,6 +33,16 @@
       "displayName": "Notification List Basics",
       "description": "Compiled example for keyed persistent warnings and semantic feedback.",
       "path": "Samples~/Notification List Basics"
+    },
+    {
+      "displayName": "Simple Usage",
+      "description": "Minimal calls through the configured package host.",
+      "path": "Samples~/SimpleUsage"
+    },
+    {
+      "displayName": "Definition Workflow",
+      "description": "Playable scene with typed C# calls, Inspector components, editable definitions and shared host ownership.",
+      "path": "Samples~/DefinitionWorkflow"
     }
   ]
 }

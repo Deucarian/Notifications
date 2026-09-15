@@ -1,5 +1,45 @@
 # Changelog
 
+## Asset workflow — Unreleased
+
+- Use shared package-aware palette/recipe selection and create/customize actions; choose configured audio before the bundled fallback.
+
+## [0.5.0] - Unreleased
+
+- Add reusable notification content, severity, lifetime and audio defaults; expose one-line typed Show/Resolve and Inspector triggers in the shared Notification Lab workflow.
+- Include a playable Definition Workflow sample with configured hosts, short callers and usage documentation.
+- Align declared package dependencies with the definition-authoring development wave.
+
+- Smoothly reflow existing runtime and Lab rows when items are inserted, reordered or removed. Keep exiting slots until their exit finishes; use a stable top anchor so growing lists no longer recenter.
+- Add independent Animate list changes and List movement duration controls. Existing serialized settings default to smooth movement; instant layout remains available.
+
+- Add Fade + Scale, Fade + Slide, Scale + Slide and Fade + Scale + Slide for entrance/exit in both the Lab and runtime rows. Preserve existing serialized transition values and defaults.
+- Rename the Lab's misleading Advanced positioning foldout to More motion options; actual list position is configured on NotificationListView, not in this foldout.
+
+- Add a playable scene demonstrating persistent warnings, resolution, timed success, bounded overflow and bundled semantic audio.
+- Expose sample title, message and timeout in the Inspector while using the package-owned notification host and facade.
+
+
+## [0.4.0] - 2026-09-11
+
+- Share one live preview between Test and Appearance, preserving rows, countdowns and selected presentation settings when changing tabs.
+- Apply the runtime-owned semantic color policy to editor rows; preview actual entrance/exit transitions and reserve exiting row slots before showing replacements.
+- Share renderer-independent reversible row transitions with runtime: identical easing, scale and slide distance; None transitions complete immediately. Overflow moves retain outgoing slots without hidden rows consuming layout space.
+- Preview the connected list's authored row palette when visual styling is disabled or a semantic role is missing.
+- Replace application-specific bundled font references with Theming's Inter assets. Expand stacked rows for larger typography while preserving padding, visible glyphs and chosen font sizes; document TMP's official Essential Resources prerequisite.
+- Restore authored runtime row colors, typography and geometry when visual styling is disabled, including clones of already-themed inactive templates and pooled rows; reapply on settings/palette changes.
+- Defer appearance-triggered row sorting until reconciliation finishes so priority changes and removals cannot skip rows or retain stale capacity.
+- Require Editor 1.11.0 and Theming 1.7.0 for shared row presentation ports and visual feature lifecycle support.
+
+## [0.3.5] - 2026-09-11
+
+- Match Test, Appearance, Audio and custom Inspectors to the shared style; retain isolated previews, runtime injection, dismissal, sound and motion settings.
+- Require Editor 1.10.6 for the shared native controls, typography, responsive layouts and accessible interaction states.
+
+## [0.3.4] - 2026-09-10
+
+- Use shared sliders for message capacity and the shared audio-disabled state. Keep message injection, lifetime, motion and lazy follow independent of visual palette adoption.
+
 ## [0.3.3] - 2026-09-09
 
 ### Changed

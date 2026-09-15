@@ -1,5 +1,53 @@
 # Deucarian Notifications
 
+## Asset selection and project defaults
+
+Notification Lab's audio selector uses the configured project audio palette, falling back to the bundled Deucarian palette. Choose can find project and installed package assets; Create and Customize make project assets explicitly. The recipe picker can create a recipe from the current lab configuration; select a recipe and choose Load to apply it. Merely opening the Lab does not save a recipe or change runtime configuration.
+
+## Typed definition workflow
+
+Create or edit the notification in Definitions or the Notification Lab. Its title, message and audio policy are reused here.
+
+Start with the [Definition Workflow walkthrough](Documentation~/DefinitionWorkflow.md).
+Import **Definition Workflow** in Package Manager for a configured sample scene
+and short caller scripts. Definitions can be edited as assets or editable C# declarations; generated keys
+work in code and Inspector dropdowns.
+
+After creating a definition named `ConnectionLost` and configuring the scene
+host, callers only need:
+
+```csharp
+using Deucarian.Notifications;
+using Deucarian.Generated;
+
+NotificationManager.Show(ProjectNotifications.ConnectionLost);
+NotificationManager.Resolve(ProjectNotifications.ConnectionLost);
+```
+
+The definition supplies severity, title, message, lifetime and sound. A
+`NotificationTrigger` exposes the same Show/Resolve operations to Unity events;
+choose its notification from the Inspector dropdown. No caller-owned store or
+presenter is required. Follow the walkthrough below for the one-time host,
+view and audio setup.
+
+
+For simple calls and setup, see [Simple usage](Documentation~/SimpleUsage.md).
+
+## One final preview
+
+Test and Appearance share one live message list. Changing tabs preserves the
+messages, timers, overflow, theme and transition progress. Adjust the visible
+limit, entrance/exit method or duration in Appearance, then return to Test to
+add or resolve messages using those exact settings. Replay entrance changes
+only the animation, never the notification lifetime.
+
+When project Visual styling is enabled, runtime rows and the editor preview
+resolve colors from Theming. Disabling it restores authored runtime row colors
+and typography. The editor-only sandbox uses the package's default row style;
+a connected runtime list uses its theme override/provider and view-style roles.
+Lazy follow still requires a running XR/camera-space list and never moves an
+editor scene camera. Requires Editor 1.11.0 and Theming 1.7.0.
+
 ## In-window navigation
 
 The left sidebar changes pages in the current window, keeping each page's draft and session alive. Right-click a sidebar item and choose **Open in new window** for an independent workspace. Closing a workspace releases its pages; ordinary page changes do not reset lab messages or stop package operations.
@@ -37,9 +85,10 @@ remain owned by those packages.
 `com.deucarian.notifications` owns reusable keyed notification lifecycle. It
 keeps one authoritative immutable snapshot, applies atomic update batches, and
 requests at most one semantic feedback cue for newly activated items in a
-batch. Application adapters own the conditions and message copy.
+batch. Application adapters own the conditions; reusable notification definitions
+own the default message copy and feedback.
 
-## Runtime example
+## Advanced core composition
 
 ```csharp
 using Deucarian.Notifications;
@@ -145,6 +194,18 @@ The core only emits a semantic role ID through `INotificationFeedbackSink`.
 Missing audio is always a safe no-op and never affects visual state.
 
 ## Presentation
+
+The bundled uGUI prefab uses Theming's licensed Inter font and atlas material;
+it does not reference a font from HoloHelmet or another application. Import
+Unity's **TMP Essential Resources** in the consuming project (Window > TextMeshPro
+> Import TMP Essential Resources) for TMP's required shaders and settings. Unity 6
+ships this official resource archive with uGUI; older Unity versions ship it with
+TextMeshPro. A package font does not replace this Unity prerequisite.
+
+Notification rows preserve their authored padding and expand their line slots
+and list height for larger themed typography. The selected font size is not
+silently reduced. Title and instruction stay separate, including when rows are
+reused or typography changes live. Custom non-stacked row layouts remain authored.
 
 `NotificationPresenter` is engine-independent. `NotificationListView` and
 `NotificationRowView` provide the uGUI implementation. Late/recreated views

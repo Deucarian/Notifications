@@ -1,0 +1,5 @@
+{
+  "name": "Deucarian.Samples.Notifications.DefinitionDeclarations",
+  "references": ["Deucarian.Editor", "Deucarian.Notifications", "Deucarian.Notifications.Editor", "Deucarian.Notifications.Unity", "Deucarian.Theming", "Deucarian.Theming.Editor", "Unity.TextMeshPro"],
+  "includePlatforms": ["Editor"]
+}

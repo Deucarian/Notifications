@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ff2d035d9e401f4397cec05dab39483, type: 3}
+  m_Name: SystemDefaultTypography
+  m_EditorClassIdentifier: Deucarian.Theming::Deucarian.Theming.DeucarianThemeTypographyProfile
+  displayName: System Default
+  fontAsset: {fileID: 0}
+  title:
+    fontSize: 20
+    fontStyle: 1
+    characterSpacing: 0
+    lineSpacing: 0
+  body:
+    fontSize: 14
+    fontStyle: 0
+    characterSpacing: 0
+    lineSpacing: 0
+  caption:
+    fontSize: 11
+    fontStyle: 0
+    characterSpacing: 0
+    lineSpacing: 0
