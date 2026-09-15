@@ -84,12 +84,31 @@ namespace Deucarian.Notifications.Editor
             form.EnabledWhen(() => host.Session != null);
         }
 
+        private void SaveAppearance()
+        {
+            var inputs = host.Inputs;
+            NotificationPrefabSelection.SavePresentation(inputs.presentation);
+            host.Connection?.ConfigurePresentation(inputs.presentation);
+            NotificationLabRecipeStorage.SaveDraft(inputs);
+            Refresh();
+        }
+
+        private bool HasSavedAppearance
+        {
+            get
+            {
+                var settings = NotificationViewSettings.Load();
+                return settings != null && settings.HasPresentation &&
+                    settings.Presentation.Equals(host.Inputs.presentation.Sanitized());
+            }
+        }
+
         private void BindAppearance()
         {
             var form = view.Appearance;
             NotificationPrefabSelection.Bind(form, () => host.Connection?.Target.View as Component);
-            form.Action("lab-save-appearance", "Apply and save", host.SaveAppearance, primary: true);
-            form.Note(() => host.HasSavedAppearance
+            form.Action("lab-save-appearance", "Apply and save", SaveAppearance, primary: true);
+            form.Note(() => HasSavedAppearance
                 ? "Appearance saved for this project. The app and both previews use these settings."
                 : "Preview your changes, then Apply and save to keep all appearance and motion settings for this project, including after Play mode.");
             form.Stepper("lab-maximum", "Visible messages", 1, 20, () => host.Inputs.presentation.maxVisible,
