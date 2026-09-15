@@ -238,7 +238,7 @@ namespace Deucarian.Notifications.Tests
 
         private NotificationStore CreateStore(INotificationFeedbackSink sink = null)
         {
-            NotificationStore store = new NotificationStore(sink);
+            NotificationStore store = new NotificationStore(sink, definitions: new RegisteredTestDefinitions("sample.one", "sample.repeat", "sample.z-warning", "sample.z-error", "sample.a-error", "sample.fix", "sample.gnss", "sample.imu"));
             stores.Add(store);
             return store;
         }

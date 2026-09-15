@@ -9,6 +9,7 @@ namespace Deucarian.Notifications
         private readonly NotificationEpisodeController episodes;
         private readonly NotificationPresenter presenter;
         private readonly INotificationDefinitions definitions;
+        private readonly INotificationResolutionView resolutionView;
         private bool disposed;
 
         public NotificationService(INotificationClock clock = null,
@@ -16,20 +17,26 @@ namespace Deucarian.Notifications
             INotificationDefinitions definitions = null)
         {
             this.definitions = definitions;
-            store = new NotificationStore(feedback);
+            store = new NotificationStore(feedback, definitions);
             episodes = new NotificationEpisodeController(store, clock ?? new StopwatchNotificationClock());
             if (view == null) return;
             presenter = new NotificationPresenter(store, view);
-            try { presenter.Activate(); }
+            resolutionView = view as INotificationResolutionView;
+            try { resolutionView?.BindResolution(episodes.Resolve); presenter.Activate(); }
             catch { Dispose(); throw; }
         }
 
         public INotificationSource Source => store;
         public NotificationSnapshot Snapshot => store.Snapshot;
 
-        public void Warn(NotificationKey key, string title, string message) =>
-            Show(new NotificationDefinition(RequireKey(key), NotificationSeverity.Warning, title, message,
-                feedbackRoleId: "deucarian.feedback.audio.warning"));
+        public void Warn(NotificationKey key, string title, string message)
+        {
+            ThrowIfDisposed();
+            var definition = NotificationDefinitions.Require(definitions, key);
+            if (definition.Severity != NotificationSeverity.Warning)
+                throw new InvalidOperationException("The selected definition is not a warning. Use Show to preserve its registered severity.");
+            Show(key, title, message);
+        }
 
         public void Show(NotificationDefinition definition)
         {
@@ -44,8 +51,7 @@ namespace Deucarian.Notifications
         {
             ThrowIfDisposed();
             RequireKey(key);
-            if (definitions == null || !definitions.TryGet(key, out var definition))
-                throw new InvalidOperationException("Notification '" + key.Id + "' is missing from the configured catalog. Create or register it in the Notification Lab and configure the NotificationHost's catalog.");
+            var definition = NotificationDefinitions.Require(definitions, key);
             Show(new NotificationDefinition(definition.Id, definition.Severity, overrides?.Title ?? definition.Title,
                 overrides?.Message ?? definition.Body, definition.Priority, overrides?.FeedbackRoleId ?? definition.FeedbackRoleId, definition.Lifetime));
         }
@@ -63,6 +69,7 @@ namespace Deucarian.Notifications
         {
             if (disposed) return;
             disposed = true;
+            resolutionView?.BindResolution(null);
             presenter?.Dispose();
             episodes.Dispose();
             store.Dispose();

@@ -39,13 +39,5 @@ namespace Deucarian.Notifications.Editor
             if (presentationChanged) runtimeConnection?.ConfigurePresentation(presentationSettings);
         }
 
-        private void SaveDraft() => NotificationLabRecipeStorage.SaveDraft(CaptureDraft());
-
-        private void RestoreDraft()
-        {
-            ApplyDraft(NotificationLabRecipeStorage.LoadDraft());
-        }
-
-
     }
 }

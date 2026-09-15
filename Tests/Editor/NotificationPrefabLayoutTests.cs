@@ -19,7 +19,7 @@ namespace Deucarian.Notifications.Tests
                     (RectTransform)root.transform, null);
                 GameObject prefab = Resources.Load<GameObject>("Deucarian/Notifications/Defaults/DefaultNotificationList");
                 Assert.NotNull(prefab);
-                NotificationRowView bundled = prefab.GetComponentInChildren<NotificationRowView>(true);
+                NotificationRowView bundled = prefab.GetComponent<NotificationListView>().RowTemplate;
                 AssertLayout(generated);
                 AssertLayout(bundled);
                 foreach (string label in new[] { "Title", "Body" })
@@ -50,7 +50,9 @@ namespace Deucarian.Notifications.Tests
             Assert.GreaterOrEqual(title.anchoredPosition.y - title.rect.height - body.anchoredPosition.y,
                 4, "There must be a gap between the title and instruction.");
             Assert.GreaterOrEqual(rect.rect.height + body.anchoredPosition.y - body.rect.height, 9, "Bottom padding");
-            Assert.GreaterOrEqual(title.anchoredPosition.x, 18, "The severity stripe needs its own space.");
+            var icon = (RectTransform)row.transform.Find("Severity");
+            Assert.GreaterOrEqual(title.anchoredPosition.x, icon.anchoredPosition.x + icon.rect.width + 16,
+                "The severity icon needs its own space.");
             Assert.AreEqual(title.anchoredPosition.x, body.anchoredPosition.x);
         }
     }

@@ -9,7 +9,7 @@ namespace Deucarian.Notifications.Tests
         public void OneLineCallsUpdateResolveAndStartNewEpisodes()
         {
             var feedback = new Feedback();
-            using (var service = new NotificationService(feedback: feedback))
+            using (var service = new NotificationService(feedback: feedback, definitions: new RegisteredTestDefinitions("connection.lost")))
             using (NotificationManager.Bind(service))
             {
                 NotificationManager.Warn(new NotificationServiceTestsKey("connection.lost"), "Lost", "Reconnect");
@@ -31,7 +31,7 @@ namespace Deucarian.Notifications.Tests
         public void ExpiryAndRegistrationCleanupDoNotDisposeBorrowedServices()
         {
             var clock = new Clock();
-            using (var service = new NotificationService(clock))
+            using (var service = new NotificationService(clock, definitions: new RegisteredTestDefinitions("timed", "next")))
             {
                 var registration = NotificationManager.Bind(service);
                 Assert.Throws<InvalidOperationException>(() => NotificationManager.Bind(service));

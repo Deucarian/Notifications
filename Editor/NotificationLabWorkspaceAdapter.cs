@@ -22,7 +22,7 @@ namespace Deucarian.Notifications.Editor
         private bool disposed;
         private NotificationLabAudioPanel audioPanel;
         private Deucarian.Editor.Definitions.DeucarianDefinitionPanel definitions;
-        private readonly NotificationLabRowPreview preview;
+        private readonly NotificationRuntimePreview preview;
 
         internal NotificationLabWorkspaceAdapter(VisualElement root, DeucarianNotificationLabWindow host)
         {
@@ -31,17 +31,19 @@ namespace Deucarian.Notifications.Editor
                 System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(Application.dataPath)),
                 "Notifications", "Add and resolve messages in the editor or running app.", host.ClearMessages, SelectTarget, "Definitions");
             definitions = new Deucarian.Editor.Definitions.DeucarianDefinitionPanel(view.Definitions,
-                new Definitions.NotificationDefinitionSchema(), asset => { host.PreviewSavedDefinition((NotificationDefinitionAsset)asset); view.SelectTab(0); });
+                new Definitions.NotificationDefinitionSchema(), asset => { host.PreviewSavedDefinition((NotificationDefinitionAsset)asset); view.SelectTab(0); }, host.DefinitionState);
             DeucarianEditorWorkspaceNavigation.Populate(view.Workspace, "deucarian.notifications.lab", host.OpenAudioLab);
             BindComposer();
             BindAppearance();
             BindAudio();
-            preview = new NotificationLabRowPreview(view);
+            preview = new NotificationRuntimePreview(view, resolve: id => { host.Session?.Resolve(id); Refresh(); });
             var replay = DeucarianEditorWorkspaceControls.IconButton("Replay entrance", DeucarianEditorIconIds.Play,
                 preview.Replay);
             replay.name = "motion-preview-play";
             replay.tooltip = "Replays the visible messages without restarting their timers.";
             view.MotionPreviewRoot.Add(replay);
+            view.TabChanged += value => host.SelectedTab = value;
+            view.SelectTab(host.SelectedTab);
         }
 
         private void Change(Action<NotificationLabRecipeData> update)
@@ -85,6 +87,7 @@ namespace Deucarian.Notifications.Editor
         private void BindAppearance()
         {
             var form = view.Appearance;
+            NotificationPrefabSelection.Bind(form, () => host.Connection?.Target.View as Component);
             form.Stepper("lab-maximum", "Visible messages", 1, 20, () => host.Inputs.presentation.maxVisible,
                 value => Change(x => x.presentation.maxVisible = Mathf.Clamp(value, 1, 20)));
             var overflow = form.Choice("lab-overflow-policy", "Overflow", new[] { "Queue" }, () => 0, _ => { });
@@ -140,6 +143,7 @@ namespace Deucarian.Notifications.Editor
                 foreach (var item in visibleSnapshot.Items) { visible.Add(Row(item)); visibleIds.Add(item.Id); }
                 foreach (var item in host.Snapshot.Items) if (!visibleIds.Contains(item.Id)) hidden.Add(Row(item));
                 view.SetMessages(visible, hidden, host.Session?.PendingCount ?? 0);
+                preview.Render(host.Snapshot);
                 view.RefreshForms();
                 audioPanel.Refresh();
                 view.Workspace.FooterLeading.text = host.Session == null ? "Session restarting…"
