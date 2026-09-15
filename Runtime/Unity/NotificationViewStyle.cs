@@ -16,7 +16,11 @@ namespace Deucarian.Notifications.Unity
         public string TitleRole => titleRole;
         public string BodyRole => bodyRole;
         [SerializeField, Range(0, .3f)] private float severityTint;
+        [SerializeField] private bool useThemeSurfaceTreatment = true;
+        [SerializeField, Min(0)] private float minimumTextSize;
         public float SeverityTint => Mathf.Clamp(severityTint, 0, .3f);
+        public bool UseThemeSurfaceTreatment { get => useThemeSurfaceTreatment; set => useThemeSurfaceTreatment = value; }
+        public float MinimumTextSize { get => minimumTextSize; set => minimumTextSize = Mathf.Clamp(value, 0, 512); }
         public void ConfigureSurface(string role, float tint) { surfaceRole = role; severityTint = Mathf.Clamp(tint, 0, .3f); }
         [SerializeField] private Color infoColor = new Color(0.2f, 0.65f, 1f, 1f);
         [SerializeField] private Color successColor = new Color(0.2f, 0.8f, 0.45f, 1f);

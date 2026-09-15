@@ -57,7 +57,9 @@ namespace Deucarian.Notifications.Editor
                 new Color(0.20f, 0.80f, 0.45f, 1f),
                 new Color(1f, 0.70f, 0.15f, 1f),
                 new Color(1f, 0.25f, 0.20f, 1f));
-            style.ConfigureSurface(DeucarianBuiltinColorRoleIds.Surface, .12f);
+            style.ConfigureSurface(DeucarianBuiltinColorRoleIds.Background, .12f);
+            style.UseThemeSurfaceTreatment = false;
+            style.MinimumTextSize = 23;
             EditorUtility.SetDirty(style);
             return style;
         }

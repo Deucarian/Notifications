@@ -25,9 +25,9 @@ namespace Deucarian.Notifications.Tests
             var style = NotificationViewDefaults.LoadRowPrefab().ViewStyle;
             Assert.That(style.SeverityTint, Is.EqualTo(.12f));
             var appearance = NotificationRowAppearance.Resolve(theme, style, severity, NotificationRowAppearance.Default(severity));
-            Assert.That(theme.TryGetColorById(DeucarianBuiltinColorRoleIds.Surface, out var surface), Is.True);
+            Assert.That(theme.TryGetColorById(style.SurfaceRole, out var surface), Is.True);
             var expected = Color.Lerp(surface, appearance.Severity, .12f);
-            if (theme.VisualStyle != null) expected = theme.VisualStyle.ResolveSurfaceColor(expected);
+            if (theme.VisualStyle != null && style.UseThemeSurfaceTreatment) expected = theme.VisualStyle.ResolveSurfaceColor(expected);
             Assert.That(appearance.Surface, Is.EqualTo(expected));
             theme.TryGetColorById(DeucarianBuiltinColorRoleIds.Background, out var backdrop);
             var visible = DeucarianForegroundContrast.Composite(appearance.Surface, backdrop);
@@ -73,6 +73,8 @@ namespace Deucarian.Notifications.Tests
                 var light = DeucarianVisualDefaults.LoadFamily().LightTheme;
                 row.ThemeOverride = light;
                 row.ApplyTheme(light);
+                foreach (var text in row.GetComponentsInChildren<TMPro.TMP_Text>())
+                    Assert.That(text.fontSize, Is.GreaterThanOrEqualTo(23), "The compact default keeps its readable authored text size.");
                 var button = row.GetComponent<NotificationRowAction>().Button;
                 button.gameObject.SetActive(false);
                 button.gameObject.SetActive(true);

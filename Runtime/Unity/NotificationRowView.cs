@@ -168,12 +168,13 @@ namespace Deucarian.Notifications.Unity
                 ApplyAppearance();
         }
 
-        private static void ApplyTypography(TMP_Text text, DeucarianThemeTextRole role, DeucarianThemeStyle visualStyle)
+        private void ApplyTypography(TMP_Text text, DeucarianThemeTextRole role, DeucarianThemeStyle visualStyle)
         {
             if (text == null) return;
             var target = text.GetComponent<DeucarianTMPThemeTypography>();
             if (target == null) target = text.gameObject.AddComponent<DeucarianTMPThemeTypography>();
             target.TextRole = role;
+            target.MinimumFontSize = style != null ? style.MinimumTextSize : 0;
             target.ApplyStyle(visualStyle);
         }
 
