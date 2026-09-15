@@ -16,6 +16,7 @@ namespace Deucarian.Notifications.Tests
 {
     public sealed class NotificationRuntimeAppearanceTests
     {
+        private sealed class PreviewClock : INotificationClock { public double NowSeconds => 0; }
         [Test]
         public void VisualOffRestoresRuntimeTypographyAndPreviewsTheConnectedListsAuthoredColors()
         {
@@ -63,13 +64,15 @@ namespace Deucarian.Notifications.Tests
                 Assert.That(text.fontSize, Is.EqualTo(17));
 
                 using var workspace = new DeucarianEditorLabWorkspace(new VisualElement(), "Test", "Notifications", "", () => { }, _ => { });
-                using var preview = new NotificationLabRowPreview(workspace);
+                using var preview = new NotificationRuntimePreview(workspace, autoAdvance: false);
                 preview.Configure(NotificationPresentationSettings.Default, list);
-                workspace.SetMessages(new[] { new DeucarianEditorMessageData("warning", "Warning", "Content", DeucarianEditorStatus.Warning, "") },
-                    Array.Empty<DeucarianEditorMessageData>(), 0);
-                var row = workspace.VisibleRows.Q<DeucarianEditorMessageRow>("warning");
-                Assert.That(row.Title.style.color.value, Is.EqualTo(Color.yellow));
-                Assert.That(row.style.backgroundColor.value, Is.EqualTo(Color.cyan));
+                using var session = new NotificationLabSession(new PreviewClock(), null);
+                session.Show(NotificationLabSession.Example(NotificationSeverity.Warning), default);
+                preview.Render(session.Store.Snapshot);
+                preview.List.AdvancePreview(10);
+                var row = preview.List.GetComponentInChildren<NotificationRowView>();
+                Assert.That(row.transform.Find("Title").GetComponent<TMP_Text>().color, Is.EqualTo(Color.yellow));
+                Assert.That(row.GetComponent<Image>().color, Is.EqualTo(Color.cyan));
                 Assert.That(template.AuthoredAppearance(NotificationSeverity.Warning).Severity, Is.EqualTo(Color.magenta));
                 Assert.That(NotificationRowAppearance.Resolve(null, rowStyle, NotificationSeverity.Warning,
                     NotificationRowAppearance.Default(NotificationSeverity.Warning)).Severity, Is.EqualTo(Color.magenta));

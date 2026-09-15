@@ -16,7 +16,8 @@
     "Deucarian.Notifications.Samples.Basic",
     "Deucarian.Notifications.Samples.DefinitionWorkflow",
     "Deucarian.Notifications.Samples.SimpleUsage",
-    "Deucarian.Samples.Notifications.DefinitionDeclarations"
+    "Deucarian.Samples.Notifications.DefinitionDeclarations",
+    "Deucarian.Samples.Notifications.BasicDefinitions"
   ],
   "testAssemblies": [
     "Deucarian.Notifications.PlayModeTests",

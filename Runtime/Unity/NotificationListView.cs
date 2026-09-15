@@ -31,6 +31,20 @@ namespace Deucarian.Notifications.Unity
         private readonly DeucarianLayoutTransition overflowMotion = new DeucarianLayoutTransition();
         private bool reconciling;
         private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
+#if UNITY_EDITOR
+        internal bool EditorPreview { get; set; }
+        internal void AdvancePreview(float seconds) { if (EditorPreview) Advance(seconds); }
+#endif
+        private bool CanAnimate
+        {
+            get
+            {
+#if UNITY_EDITOR
+                if (EditorPreview) return isActiveAndEnabled;
+#endif
+                return isActiveAndEnabled && Application.isPlaying;
+            }
+        }
 
         public int VisibleCount => selected.Count;
         public int OverflowCount => Math.Max(0, snapshot.Count - selected.Count);
@@ -86,7 +100,7 @@ namespace Deucarian.Notifications.Unity
 
         private void ReconcileRows()
         {
-            bool animate = Application.isPlaying && isActiveAndEnabled;
+            bool animate = CanAnimate;
             for (int i = slots.Count - 1; i >= 0; i--)
             {
                 Slot slot = slots[i];
@@ -118,14 +132,22 @@ namespace Deucarian.Notifications.Unity
 
         private void Update()
         {
+#if UNITY_EDITOR
+            if (EditorPreview) return;
+#endif
+            Advance(Time.unscaledDeltaTime);
+        }
+
+        private void Advance(float seconds)
+        {
             bool released = false;
             for (int i = slots.Count - 1; i >= 0; i--)
             {
-                slots[i].Motion.Advance(Time.unscaledDeltaTime);
+                slots[i].Motion.Advance(seconds);
                 if (!slots[i].Motion.IsShowing && slots[i].Motion.IsHidden) { Retire(i); released = true; }
             }
             if (released) Reconcile();
-            overflowMotion.Advance(Time.unscaledDeltaTime);
+            overflowMotion.Advance(seconds);
             if (overflow != null) overflow.rectTransform.anchoredPosition = overflowMotion.Current;
         }
 
@@ -162,7 +184,7 @@ namespace Deucarian.Notifications.Unity
             showing.Sort((a, b) => Rank(a.Row.NotificationId).CompareTo(Rank(b.Row.NotificationId)));
             int next = 0;
             for (int i = 0; i < slots.Count; i++) if (slots[i].Motion.IsShowing) slots[i] = showing[next++];
-            bool animate = Application.isPlaying && isActiveAndEnabled;
+            bool animate = CanAnimate;
             float width = ((RectTransform)rowPrefab.transform).sizeDelta.x;
             float y = 0;
             for (int i = 0; i < slots.Count; i++)
@@ -229,8 +251,13 @@ namespace Deucarian.Notifications.Unity
             foreach (Slot slot in slots) slot.Motion.Complete();
             overflowMotion.Complete();
         }
-        private void LateUpdate() => followMotion.Advance(transform,
-            Presentation.lazyFollow && SupportsLazyFollow, Presentation.follow, Time.unscaledDeltaTime);
+        private void LateUpdate()
+        {
+#if UNITY_EDITOR
+            if (EditorPreview) return;
+#endif
+            followMotion.Advance(transform, Presentation.lazyFollow && SupportsLazyFollow, Presentation.follow, Time.unscaledDeltaTime);
+        }
         private void OnEnable() { ApplyAnchor(); if (container != null && rowPrefab != null) Render(snapshot); }
         private void OnValidate() { presentation = Presentation; ApplyAnchor(); }
     }

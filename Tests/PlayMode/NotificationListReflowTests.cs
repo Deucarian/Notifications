@@ -20,7 +20,7 @@ namespace Deucarian.Notifications.PlayModeTests
                 var settings = NotificationPresentationSettings.Default;
                 settings.show = settings.hide = NotificationTransition.None; settings.reflowSeconds = .4f;
                 view.ConfigurePresentation(settings);
-                using var store = new NotificationStore(); using var presenter = new NotificationPresenter(store, view);
+                using var store = new NotificationStore(definitions: new RegisteredTestDefinitions("first", "last", "top", "instant", "next")); using var presenter = new NotificationPresenter(store, view);
                 presenter.Activate();
                 store.ApplyBatch(new[] { NotificationCommand.Activate(Message("first", 20)) }, 0);
                 yield return null; Canvas.ForceUpdateCanvases();
@@ -59,7 +59,7 @@ namespace Deucarian.Notifications.PlayModeTests
                 var settings = NotificationPresentationSettings.Default;
                 settings.showSeconds = 0; settings.hideSeconds = .2f; settings.reflowSeconds = .4f;
                 view.ConfigurePresentation(settings);
-                using var store = new NotificationStore(); using var presenter = new NotificationPresenter(store, view);
+                using var store = new NotificationStore(definitions: new RegisteredTestDefinitions("first", "last", "top", "instant", "next")); using var presenter = new NotificationPresenter(store, view);
                 presenter.Activate(); store.ApplyBatch(new[] { NotificationCommand.Activate(Message("top", 20)), NotificationCommand.Activate(Message("next", 10)) }, 0);
                 yield return null;
                 var next = (RectTransform)Row(root, "next").transform; float start = next.anchoredPosition.y;

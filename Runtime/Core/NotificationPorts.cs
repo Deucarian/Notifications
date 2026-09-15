@@ -13,6 +13,7 @@ namespace Deucarian.Notifications
     /// <summary>Explicit mutation access for condition adapters and test injection.</summary>
     public interface INotificationCommands
     {
+        void ValidateDefinition(NotificationDefinition definition);
         NotificationChangedEventArgs ApplyBatch(IEnumerable<NotificationCommand> commands, double nowSeconds);
         NotificationChangedEventArgs ClearAll(double nowSeconds = 0d);
     }

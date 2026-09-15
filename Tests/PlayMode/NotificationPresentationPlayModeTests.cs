@@ -21,7 +21,7 @@ namespace Deucarian.Notifications.PlayModeTests
             {
                 Time.timeScale = 0;
                 var view = root.GetComponent<NotificationListView>();
-                using (var store = new NotificationStore())
+                using (var store = new NotificationStore(definitions: new RegisteredTestDefinitions("test", "theme", "overflow", "item.0", "item.1", "item.2", "item.3", "item.4", "item.5", "item.6", "item.7")))
                 using (var presenter = new NotificationPresenter(store, view))
                 {
                     presenter.Activate();
@@ -56,7 +56,7 @@ namespace Deucarian.Notifications.PlayModeTests
             try
             {
                 var view = root.GetComponent<NotificationListView>();
-                using (var store = new NotificationStore())
+                using (var store = new NotificationStore(definitions: new RegisteredTestDefinitions("test", "theme", "overflow", "item.0", "item.1", "item.2", "item.3", "item.4", "item.5", "item.6", "item.7")))
                 using (var presenter = new NotificationPresenter(store, view))
                 {
                     presenter.Activate();
@@ -110,7 +110,7 @@ namespace Deucarian.Notifications.PlayModeTests
                 var settings = view.Presentation;
                 settings.maxVisible = 1;
                 view.ConfigurePresentation(settings);
-                using (var store = new NotificationStore())
+                using (var store = new NotificationStore(definitions: new RegisteredTestDefinitions("test", "theme", "overflow", "item.0", "item.1", "item.2", "item.3", "item.4", "item.5", "item.6", "item.7")))
                 using (var presenter = new NotificationPresenter(store, view))
                 {
                     presenter.Activate();

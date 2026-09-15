@@ -36,7 +36,7 @@ namespace Deucarian.Notifications.Tests
         [Test]
         public void DiscoveryFollowsPresenterLifecycleAndStoreDisposal()
         {
-            using (var store = new NotificationStore())
+            using (var store = new NotificationStore(definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(store, new View()))
             {
                 Assert.IsFalse(NotificationEditorTargets.Capture().Any(x => x.Store == store));
@@ -59,7 +59,7 @@ namespace Deucarian.Notifications.Tests
         public void EditingMessageInputsDoesNotCompleteRuntimeTransitions()
         {
             var view = new View();
-            using (var host = new NotificationStore())
+            using (var host = new NotificationStore(definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, view))
             {
                 presenter.Activate();
@@ -88,7 +88,7 @@ namespace Deucarian.Notifications.Tests
         {
             var feedback = new Feedback();
             var view = new View();
-            using (var host = new NotificationStore(feedback))
+            using (var host = new NotificationStore(feedback, definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, view))
             using (var session = new NotificationLabSession(new Clock(), null))
             {
@@ -117,7 +117,7 @@ namespace Deucarian.Notifications.Tests
         public void DelaysAndResetAffectOnlyInjectedMessages()
         {
             var clock = new Clock();
-            using (var host = new NotificationStore())
+            using (var host = new NotificationStore(definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, new View()))
             using (var session = new NotificationLabSession(clock, null))
             {
@@ -148,7 +148,7 @@ namespace Deucarian.Notifications.Tests
         [Test]
         public void IndependentLabsCannotResolveEachOthersMessages()
         {
-            using (var host = new NotificationStore())
+            using (var host = new NotificationStore(definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, new View()))
             using (var first = new NotificationLabSession(new Clock(), null))
             using (var second = new NotificationLabSession(new Clock(), null))
@@ -174,7 +174,7 @@ namespace Deucarian.Notifications.Tests
         [Test]
         public void CleanupSurvivesPresenterOrStoreBeingDestroyedFirst()
         {
-            using (var host = new NotificationStore())
+            using (var host = new NotificationStore(definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, new View()))
             using (var session = new NotificationLabSession(new Clock(), null))
             {
@@ -201,7 +201,7 @@ namespace Deucarian.Notifications.Tests
             var clock = new Clock();
             var view = new View();
             var original = view.Presentation;
-            using (var host = new NotificationStore())
+            using (var host = new NotificationStore(definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, view))
             using (var session = new NotificationLabSession(clock, null))
             {
@@ -236,7 +236,7 @@ namespace Deucarian.Notifications.Tests
         public void NonemptySessionCannotAutoplayWhenConnecting()
         {
             var feedback = new Feedback();
-            using (var host = new NotificationStore(feedback))
+            using (var host = new NotificationStore(feedback, definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, new View()))
             using (var session = new NotificationLabSession(new Clock(), null))
             {
@@ -252,7 +252,7 @@ namespace Deucarian.Notifications.Tests
         [TestCase(PlayModeStateChange.ExitingEditMode)]
         public void WindowTransitionsRemoveOnlyLabMessages(PlayModeStateChange transition)
         {
-            using (var host = new NotificationStore())
+            using (var host = new NotificationStore(definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var presenter = new NotificationPresenter(host, new View()))
             {
                 presenter.Activate();
@@ -278,8 +278,8 @@ namespace Deucarian.Notifications.Tests
         public void WindowChangingTargetsAndClosingCleanUpWithoutAutoplay()
         {
             var feedback = new Feedback();
-            using (var first = new NotificationStore(feedback))
-            using (var second = new NotificationStore(feedback))
+            using (var first = new NotificationStore(feedback, definitions: new RegisteredTestDefinitions("lab.custom", "real")))
+            using (var second = new NotificationStore(feedback, definitions: new RegisteredTestDefinitions("lab.custom", "real")))
             using (var a = new NotificationPresenter(first, new View()))
             using (var b = new NotificationPresenter(second, new View()))
             {
@@ -322,7 +322,7 @@ namespace Deucarian.Notifications.Tests
             var view = root.GetComponent<NotificationListView>();
             try
             {
-                using (var host = new NotificationStore(feedback))
+                using (var host = new NotificationStore(feedback, definitions: new RegisteredTestDefinitions("lab.custom", "real")))
                 using (var presenter = new NotificationPresenter(host, view))
                 {
                     presenter.Activate();

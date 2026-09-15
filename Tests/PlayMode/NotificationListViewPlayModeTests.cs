@@ -34,7 +34,7 @@ namespace Deucarian.Notifications.PlayModeTests
             presentation.show = presentation.hide = NotificationTransition.None;
             view.ConfigurePresentation(presentation);
             FeedbackSink feedback = new FeedbackSink();
-            using (NotificationStore store = new NotificationStore(feedback))
+            using (NotificationStore store = new NotificationStore(feedback, definitions: new RegisteredTestDefinitions("sample.imu", "sample.gnss", "sample.fix", "layout", "companion")))
             using (NotificationPresenter presenter = new NotificationPresenter(store, view))
             {
                 presenter.Activate();
@@ -116,7 +116,7 @@ namespace Deucarian.Notifications.PlayModeTests
                 settings.show = settings.hide = NotificationTransition.None;
                 settings.instantLayout = true;
                 view.ConfigurePresentation(settings);
-                using (var store = new NotificationStore())
+                using (var store = new NotificationStore(definitions: new RegisteredTestDefinitions("sample.imu", "sample.gnss", "sample.fix", "layout", "companion")))
                 using (var presenter = new NotificationPresenter(store, view))
                 {
                     presenter.Activate();

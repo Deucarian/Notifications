@@ -9,6 +9,7 @@ namespace Deucarian.Notifications.Editor
     {
         private readonly NotificationEpisodeController controller;
         private readonly INotificationFeedbackSink feedback;
+        private readonly NotificationEditorDefinitionScope declarations;
         private readonly Dictionary<NotificationId, NotificationConditionSample> conditions =
             new Dictionary<NotificationId, NotificationConditionSample>();
         private bool disposed;
@@ -18,6 +19,7 @@ namespace Deucarian.Notifications.Editor
             if (clock == null) throw new ArgumentNullException(nameof(clock));
             this.feedback = feedback;
             Store = new NotificationStore(this);
+            declarations = Store.CreateEditorScope();
             controller = new NotificationEpisodeController(Store, clock);
         }
 
@@ -37,6 +39,7 @@ namespace Deucarian.Notifications.Editor
             var batch = new List<NotificationConditionSample>();
             foreach (NotificationDefinition definition in definitions)
             {
+                declarations.Register(definition);
                 var sample = new NotificationConditionSample(definition, true, timing);
                 conditions[definition.Id] = sample;
                 batch.Add(sample);
@@ -79,6 +82,7 @@ namespace Deucarian.Notifications.Editor
             ThrowIfDisposed();
             controller.Reset();
             conditions.Clear();
+            declarations.Clear();
             PingCount = 0;
             LastBatchSize = 0;
         }
@@ -115,6 +119,7 @@ namespace Deucarian.Notifications.Editor
             if (disposed) return;
             disposed = true;
             controller.Dispose();
+            declarations.Dispose();
             Store.Dispose();
             conditions.Clear();
         }

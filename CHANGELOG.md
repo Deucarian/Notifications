@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] - 2026-09-15
+
+- Require registered definitions at the store and scheduler boundary, including direct C# calls. Reject invalid batches before state or feedback changes.
+- Render the actual runtime prefab in the Lab, with shared layout, typography and transitions. Temporary editor definitions are scoped and cleaned up.
+- Migrate the Basic sample to editable declarations and explicit catalog lookup.
+
 ## Asset workflow — Unreleased
 
 - Use shared package-aware palette/recipe selection and create/customize actions; choose configured audio before the bundled fallback.
