@@ -33,7 +33,7 @@ namespace Deucarian.Notifications.Editor
         internal NotificationRuntimePreview(DeucarianEditorLabWorkspace workspace, bool autoAdvance = true)
         {
             this.autoAdvance = autoAdvance;
-            root = DeucarianEditorWorkspaceControls.Region("notification-runtime-preview");
+            root = DeucarianEditorWorkspaceControls.Region("notification-runtime-preview", "dw-lab-preview");
             image = new UnityEngine.UIElements.Image { name = "notification-runtime-image", scaleMode = ScaleMode.ScaleToFit };
             image.style.height = 360;
             image.style.flexGrow = 1;
