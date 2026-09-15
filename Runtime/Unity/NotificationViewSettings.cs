@@ -8,10 +8,29 @@ namespace Deucarian.Notifications.Unity
     {
         public const string ResourcePath = "Deucarian/Notifications/NotificationViewSettings";
         [SerializeField] private NotificationRowView customPrefab;
+        [SerializeField] private bool hasPresentation;
+        [SerializeField] private NotificationPresentationSettings presentation = NotificationPresentationSettings.Default;
+        public bool HasPresentation => hasPresentation;
+        public NotificationPresentationSettings Presentation => presentation.Sanitized();
         public NotificationRowView CustomPrefab => customPrefab;
         public bool UsesDefault => customPrefab == null;
         public event Action Changed;
         public static NotificationViewSettings Load() => Resources.Load<NotificationViewSettings>(ResourcePath);
+
+        public static NotificationPresentationSettings ResolvePresentation(NotificationPresentationSettings fallback)
+        {
+            var settings = Load();
+            return settings != null && settings.HasPresentation ? settings.Presentation : fallback.Sanitized();
+        }
+
+        public void SetPresentation(NotificationPresentationSettings value)
+        {
+            value = value.Sanitized();
+            if (hasPresentation && presentation.Equals(value)) return;
+            presentation = value;
+            hasPresentation = true;
+            Changed?.Invoke();
+        }
 
         public void UseCustomPrefab(NotificationRowView prefab)
         {

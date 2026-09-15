@@ -88,7 +88,7 @@ namespace Deucarian.Notifications.Editor
             {
                 // A deactivated presenter no longer observes cleanup. Refresh before restoring layout.
                 target.View.Render(target.Store.Snapshot);
-                presentationTarget?.ConfigurePresentation(originalPresentation);
+                presentationTarget?.ConfigurePresentation(NotificationViewSettings.ResolvePresentation(originalPresentation));
             }
         }
     }
