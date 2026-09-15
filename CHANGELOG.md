@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.1] - 2026-09-15
+
+- Render sandbox notifications with the staged visual theme and explain draft versus runtime selection. Preserve Lab tabs, selection and authoring state through reload.
+
+
 ## [0.7.0] - 2026-09-15
 
 - Restore the Lab's icon-and-border card as a package-owned runtime row prefab, shared by the Lab and default lists.

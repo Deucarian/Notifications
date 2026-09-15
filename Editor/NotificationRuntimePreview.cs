@@ -18,6 +18,8 @@ namespace Deucarian.Notifications.Editor
         private double lastRenderTime;
         private readonly UnityEngine.UIElements.Image image;
         private readonly Label status;
+        private readonly NotificationPreviewTheme previewTheme = new NotificationPreviewTheme();
+        private int themeRevision;
         private PreviewRenderUtility renderer;
         private GameObject canvasObject;
         private RectTransform canvasRect;
@@ -51,6 +53,7 @@ namespace Deucarian.Notifications.Editor
 
         internal NotificationListView List => list;
         internal bool HasRenderedFrame { get; private set; }
+        internal string ThemeDescription => previewTheme.Description;
 
         internal void Configure(NotificationPresentationSettings value, Component runtimeView)
         {
@@ -61,14 +64,18 @@ namespace Deucarian.Notifications.Editor
             if (list == null) return;
             var next = value.Sanitized();
             if (!settings.Equals(next)) { settings = next; list.ConfigurePresentation(settings); dirty = true; }
-            DeucarianTheme theme = source != null ? source.ThemeOverride : null;
-            var provider = runtimeView != null ? DeucarianThemeRuntimeResolver.FindProvider(runtimeView) : null;
-            if (theme == null && provider != null) theme = provider.CurrentTheme;
-            if (theme == null) theme = DeucarianThemeRuntimeResolver.ResolveDefaultTheme();
-            if (template.ThemeOverride != theme)
+            DeucarianTheme theme = previewTheme.Resolve(source, runtimeView);
+            status.text = previewTheme.Description;
+            if (template.ThemeOverride != theme || themeRevision != previewTheme.Revision)
             {
+                themeRevision = previewTheme.Revision;
                 template.ThemeOverride = theme;
-                foreach (var row in list.GetComponentsInChildren<NotificationRowView>(true)) row.ThemeOverride = theme;
+                template.ApplyTheme(theme);
+                foreach (var row in list.GetComponentsInChildren<NotificationRowView>(true))
+                {
+                    row.ThemeOverride = theme;
+                    row.ApplyTheme(theme);
+                }
                 dirty = true;
             }
         }
@@ -96,6 +103,7 @@ namespace Deucarian.Notifications.Editor
         private void Create(NotificationRowView source)
         {
             ReleaseRenderer();
+            previewTheme.Dispose();
             sourceTemplate = source;
             var prefab = NotificationViewDefaults.LoadListPrefab();
             if (prefab == null) { status.text = "The runtime notification prefab is missing. Repair the package view assets."; return; }
@@ -190,6 +198,7 @@ namespace Deucarian.Notifications.Editor
             EditorApplication.update -= Tick;
             image.UnregisterCallback<GeometryChangedEvent>(OnImageGeometryChanged);
             ReleaseRenderer();
+            previewTheme.Dispose();
         }
     }
 }
