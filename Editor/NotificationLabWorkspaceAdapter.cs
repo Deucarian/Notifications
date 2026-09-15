@@ -88,6 +88,10 @@ namespace Deucarian.Notifications.Editor
         {
             var form = view.Appearance;
             NotificationPrefabSelection.Bind(form, () => host.Connection?.Target.View as Component);
+            form.Action("lab-save-appearance", "Apply and save", host.SaveAppearance, primary: true);
+            form.Note(() => host.HasSavedAppearance
+                ? "Appearance saved for this project. The app and both previews use these settings."
+                : "Preview your changes, then Apply and save to keep all appearance and motion settings for this project, including after Play mode.");
             form.Stepper("lab-maximum", "Visible messages", 1, 20, () => host.Inputs.presentation.maxVisible,
                 value => Change(x => x.presentation.maxVisible = Mathf.Clamp(value, 1, 20)));
             var overflow = form.Choice("lab-overflow-policy", "Overflow", new[] { "Queue" }, () => 0, _ => { });
@@ -119,7 +123,7 @@ namespace Deucarian.Notifications.Editor
             advanced.Note(() => host.Connection == null
                 ? "Test and Appearance share the same messages, theme and transitions. Lazy follow needs a running camera-space or XR list; this editor preview never moves a scene camera."
                 : host.Connection.SupportsPresentation
-                    ? "Live overrides affect this list only and are restored on disconnect. Colours and typography follow the application's theme."
+                    ? "Unsaved changes are temporary in the running app. Apply and save keeps them after disconnecting. Colours and typography follow Theming."
                     : "This custom view does not expose presentation settings; its host controls layout and motion.");
             advanced.Note(() => "Overflow stays active. Timed messages expire from activation, including in overflow; persistent messages wait for resolution.");
             form.EnabledWhen(() => host.Session != null && (host.Connection == null || host.Connection.SupportsPresentation));

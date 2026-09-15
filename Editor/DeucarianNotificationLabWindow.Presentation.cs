@@ -13,6 +13,17 @@ namespace Deucarian.Notifications.Editor
         [SerializeField] private float lifetimeSeconds = 5f;
         [SerializeField] private NotificationPresentationSettings presentationSettings = NotificationPresentationSettings.Default;
 
+        internal void SaveAppearance()
+        {
+            NotificationPrefabSelection.SavePresentation(presentationSettings);
+            runtimeConnection?.ConfigurePresentation(presentationSettings);
+            NotificationLabRecipeStorage.SaveDraft(CaptureDraft());
+            workspace?.Refresh();
+        }
+
+        internal bool HasSavedAppearance => NotificationViewSettings.Load()?.HasPresentation == true &&
+            NotificationViewSettings.Load().Presentation.Equals(presentationSettings.Sanitized());
+
         private NotificationLifetime Lifetime() => lifetimeKind == NotificationLifetimeKind.Timed
             ? NotificationLifetime.Timed(Math.Max(0.1, lifetimeSeconds)) : NotificationLifetime.UntilResolved;
 
