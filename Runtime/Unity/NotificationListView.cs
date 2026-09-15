@@ -100,6 +100,8 @@ namespace Deucarian.Notifications.Unity
         private void RefreshProjectRowPrefab()
         {
             ReplaceRowPrefab(NotificationViewDefaults.ResolveRowPrefab(viewSettings));
+            if (viewSettings != null && viewSettings.HasPresentation && !Presentation.Equals(viewSettings.Presentation))
+                ConfigurePresentation(viewSettings.Presentation);
         }
 
         private void ReplaceRowPrefab(NotificationRowView next)

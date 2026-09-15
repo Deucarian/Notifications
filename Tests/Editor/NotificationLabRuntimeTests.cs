@@ -68,13 +68,14 @@ namespace Deucarian.Notifications.Tests
                 try
                 {
                     window.SelectRuntimeTargetForTests(Target(host));
+                    int initialChanges = view.PresentationChanges;
                     var draft = window.Inputs;
                     draft.title = "Typing a new message";
                     window.Inputs = draft;
-                    Assert.That(view.PresentationChanges, Is.Zero);
+                    Assert.That(view.PresentationChanges, Is.EqualTo(initialChanges));
                     draft.presentation.maxVisible = 2;
                     window.Inputs = draft;
-                    Assert.That(view.PresentationChanges, Is.EqualTo(1));
+                    Assert.That(view.PresentationChanges, Is.EqualTo(initialChanges + 1));
                     Assert.That(view.Presentation.maxVisible, Is.EqualTo(2));
                     window.SelectRuntimeTargetForTests(null);
                     window.Inputs = original;
@@ -274,6 +275,61 @@ namespace Deucarian.Notifications.Tests
             }
         }
 
+        [UnityTest]
+        public IEnumerator SavedAppearanceSurvivesDisconnectReopenAndNewViews()
+        {
+            yield return new EnterPlayMode();
+            var previous = NotificationViewSettings.Load();
+            string backup = previous != null ? EditorJsonUtility.ToJson(previous) : null;
+            var draft = NotificationLabRecipeStorage.LoadDraft();
+            GameObject first = null, next = null;
+            DeucarianNotificationLabWindow window = null;
+            try
+            {
+                first = UnityEngine.Object.Instantiate(NotificationViewDefaults.LoadListPrefab());
+                var view = new View();
+                using var store = new NotificationStore();
+                using var presenter = new NotificationPresenter(store, view);
+                presenter.Activate();
+                using var session = new NotificationLabSession(new Clock(), new Feedback());
+                var settings = NotificationPresentationSettings.Default;
+                settings.show = NotificationTransition.FadeAndScale;
+                settings.showSeconds = .42f;
+                settings.hideSeconds = .31f;
+                settings.maxVisible = 3;
+                settings.reflowSeconds = .35f;
+                settings.lazyFollow = true;
+                using (var connection = new NotificationLabRuntimeConnection(session.Store, Target(store), new Clock()))
+                {
+                    connection.ConfigurePresentation(settings);
+                    NotificationPrefabSelection.SavePresentation(settings);
+                    Assert.That(first.GetComponent<NotificationListView>().Presentation, Is.EqualTo(settings));
+                }
+                Assert.That(view.Presentation, Is.EqualTo(settings), "Disconnect must not undo saved settings.");
+                AssetDatabase.ImportAsset(NotificationPrefabSelection.SettingsPath, ImportAssetOptions.ForceUpdate);
+                Assert.That(NotificationViewSettings.Load().Presentation, Is.EqualTo(settings));
+                next = UnityEngine.Object.Instantiate(NotificationViewDefaults.LoadListPrefab());
+                Assert.That(next.GetComponent<NotificationListView>().Presentation, Is.EqualTo(settings));
+                window = ScriptableObject.CreateInstance<DeucarianNotificationLabWindow>();
+                Assert.That(window.Inputs.presentation, Is.EqualTo(settings));
+            }
+            finally
+            {
+                if (window != null) UnityEngine.Object.DestroyImmediate(window);
+                if (first != null) UnityEngine.Object.DestroyImmediate(first);
+                if (next != null) UnityEngine.Object.DestroyImmediate(next);
+                if (previous == null) AssetDatabase.DeleteAsset(NotificationPrefabSelection.SettingsPath);
+                else
+                {
+                    EditorJsonUtility.FromJsonOverwrite(backup, previous);
+                    EditorUtility.SetDirty(previous);
+                    AssetDatabase.SaveAssetIfDirty(previous);
+                }
+                NotificationLabRecipeStorage.SaveDraft(draft);
+            }
+            yield return new ExitPlayMode();
+        }
+
         [Test]
         public void WindowChangingTargetsAndClosingCleanUpWithoutAutoplay()
         {
@@ -288,9 +344,15 @@ namespace Deucarian.Notifications.Tests
                 var window = ScriptableObject.CreateInstance<DeucarianNotificationLabWindow>();
                 try
                 {
+                    var inputs = window.Inputs;
+                    inputs.presentation.showSeconds = .47f;
+                    inputs.presentation.show = NotificationTransition.FadeAndSlide;
+                    window.Inputs = inputs;
                     window.SelectRuntimeTargetForTests(Target(first));
                     window.AddCustomForTests();
                     window.SelectRuntimeTargetForTests(Target(second));
+                    Assert.That(window.Inputs.presentation, Is.EqualTo(inputs.presentation));
+                    Assert.That(((INotificationPresentationTarget)Target(second).View).Presentation, Is.EqualTo(inputs.presentation));
                     Assert.AreEqual(0, first.Snapshot.Count);
                     Assert.AreEqual(0, second.Snapshot.Count);
                     Assert.AreEqual(1, feedback.Count);

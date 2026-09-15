@@ -52,7 +52,13 @@ namespace Deucarian.Notifications.Editor
 
         private void OnEnable()
         {
-            if (!draftInitialized) { ApplyDraft(NotificationLabRecipeStorage.LoadDraft()); AdoptPaletteSelection(); draftInitialized = true; }
+            if (!draftInitialized)
+            {
+                ApplyDraft(NotificationLabRecipeStorage.LoadDraft());
+                presentationSettings = NotificationViewSettings.ResolvePresentation(presentationSettings);
+                AdoptPaletteSelection();
+                draftInitialized = true;
+            }
             StartSession();
             EditorApplication.update += Tick;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
@@ -174,7 +180,7 @@ namespace Deucarian.Notifications.Editor
             {
                 audio.Configure(paletteSet, experience, false);
                 runtimeConnection = new NotificationLabRuntimeConnection(session.Store, target, new EditorClock());
-                presentationSettings = runtimeConnection.Presentation;
+                runtimeConnection.ConfigurePresentation(presentationSettings);
             }
             workspace?.Refresh();
         }
