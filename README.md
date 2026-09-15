@@ -91,9 +91,11 @@ package owns all layout, colours, typography and reusable controls.
   as a separate scenario action.
 - Select **Running app** in Play Mode to connect an active list. Multiple lists
   get an explicit target picker. Connecting never replays previous examples.
-- Appearance changes preview limits locally and apply motion/lazy-follow overrides
-  to a connected list. Its original settings are restored on disconnect. The
-  editor's lifecycle preview does not simulate camera motion or runtime transitions.
+- Appearance previews motion and list settings locally and in a connected list.
+  **Apply and save** stores every Appearance setting in the project's Resources
+  settings asset, so new lists, Play mode and builds use the same configuration.
+  Switching destinations preserves the Lab's choices. Unsaved live overrides are
+  restored to the saved project settings when disconnected.
 - Audio uses palette audition in Editor preview, and the application's existing
   audio route when connected. It never plays both for the same activation.
 - Recipes and inputs survive reopening; live messages and connections do not.
@@ -184,8 +186,11 @@ The ping counter counts lifecycle requests, including muted requests, not succes
 
 The **Presentation** card controls **Maximum visible**, **Show transition**, **Hide
 transition**, and their durations. These controls apply live to a connected
-`INotificationPresentationTarget`, and restore its original settings on disconnect.
+`INotificationPresentationTarget`. **Apply and save** makes them project defaults;
+disconnecting restores saved settings, or the original values if nothing was saved.
 Custom hosts can delegate this interface to their package `NotificationListView`.
+If a host supplies its own initial presentation, resolve it through
+`NotificationViewSettings.ResolvePresentation(fallback)` to respect project settings.
 Editor-only preview limits the displayed rows but motion and visual themes are
 previewed in the actual runtime list, not simulated in IMGUI.
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.2] - 2026-09-15
+
+- Add Apply and save in the Lab Appearance tab for project-wide notification motion and presentation settings.
+- Keep appearance choices when switching previews; saved settings survive disconnecting, Play mode and reopening the Lab.
+- Load saved presentation settings in package notification lists, including views already running when settings are first saved.
+
 ## [0.7.1] - 2026-09-15
 
 - Match the compact Message controls card in the shared default prefab, including palette-based Light/Dark severity tints and readable text.

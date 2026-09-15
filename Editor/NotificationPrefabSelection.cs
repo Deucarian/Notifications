@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Deucarian.Notifications.Editor
 {
-    /// <summary>Persists only the project's prefab choice; the package owns the default asset.</summary>
+    /// <summary>Persists project presentation and prefab choices; the package owns the default assets.</summary>
     internal static class NotificationPrefabSelection
     {
         internal const string SettingsPath = "Assets/DeucarianSettings/Resources/Deucarian/Notifications/NotificationViewSettings.asset";
@@ -42,6 +42,20 @@ namespace Deucarian.Notifications.Editor
                 Undo.RecordObject(list, "Change notification prefab");
                 list.UseProjectRowPrefab(settings);
             }
+        }
+
+        internal static void SavePresentation(NotificationPresentationSettings presentation)
+        {
+            var settings = NotificationViewSettings.Load();
+            if (settings == null) settings = CreateSettings();
+            Undo.RecordObject(settings, "Save notification appearance");
+            settings.SetPresentation(presentation);
+            EditorUtility.SetDirty(settings);
+            AssetDatabase.SaveAssetIfDirty(settings);
+            // Existing views must also discover a settings asset created for the first time in Play mode.
+            foreach (var list in Resources.FindObjectsOfTypeAll<NotificationListView>())
+                if (list.gameObject.scene.IsValid() && list.UsesProjectRowPrefab)
+                    list.UseProjectRowPrefab(settings);
         }
 
         private static NotificationViewSettings CreateSettings()
