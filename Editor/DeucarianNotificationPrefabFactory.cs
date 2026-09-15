@@ -185,8 +185,9 @@ namespace Deucarian.Notifications.Editor
                 "Packages/com.deucarian.theming/Runtime/Resources/Deucarian/Theming/Visual/Defaults/Roles/" + id + ".asset");
             colors.NormalRole = Role(DeucarianBuiltinColorRoleIds.UiNormal);
             colors.HighlightedRole = Role(DeucarianBuiltinColorRoleIds.UiHighlighted);
-            colors.PressedRole = Role(DeucarianBuiltinColorRoleIds.UiPressed);
-            colors.SelectedRole = Role(DeucarianBuiltinColorRoleIds.UiSelected);
+            // Resolve is a momentary action; keyboard focus keeps the readable hover surface.
+            colors.PressedRole = Role(DeucarianBuiltinColorRoleIds.UiHighlighted);
+            colors.SelectedRole = Role(DeucarianBuiltinColorRoleIds.UiHighlighted);
             colors.DisabledRole = Role(DeucarianBuiltinColorRoleIds.UiDisabled);
             var label = CreateText(rect, "Label", 23, FontStyles.Normal, 0, 128, 54);
             label.text = "Resolve";

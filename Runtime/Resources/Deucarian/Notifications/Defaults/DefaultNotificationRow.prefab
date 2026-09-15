@@ -138,8 +138,8 @@ MonoBehaviour:
   applyOnEnable: 1
   normalRole: {fileID: 11400000, guid: 40950e2a67d753742997a7a3b99f9081, type: 2}
   highlightedRole: {fileID: 11400000, guid: caaedc1ef77480547b7f55e91d28dfcc, type: 2}
-  pressedRole: {fileID: 11400000, guid: 8e106988efa28ba4a846bcb96286e99f, type: 2}
-  selectedRole: {fileID: 11400000, guid: 19ac50b7ac068834fadfbdc3c8b52f3a, type: 2}
+  pressedRole: {fileID: 11400000, guid: caaedc1ef77480547b7f55e91d28dfcc, type: 2}
+  selectedRole: {fileID: 11400000, guid: caaedc1ef77480547b7f55e91d28dfcc, type: 2}
   disabledRole: {fileID: 11400000, guid: 0c7e8f8fffec085468c5461853bc6ee1, type: 2}
 --- !u!1 &5192716277817733197
 GameObject:

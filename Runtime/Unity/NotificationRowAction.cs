@@ -36,6 +36,8 @@ namespace Deucarian.Notifications.Unity
         internal void ApplyTheme(DeucarianTheme theme)
         {
             if (theme == null) return;
+            if (colors != null) colors.ThemeOverride = theme;
+            if (textColor != null) textColor.ThemeOverride = theme;
             colors?.ApplyTheme(theme);
             textColor?.ApplyTheme(theme);
         }

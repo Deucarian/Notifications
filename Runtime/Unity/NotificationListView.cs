@@ -40,6 +40,7 @@ namespace Deucarian.Notifications.Unity
             var group = GetComponent<CanvasGroup>();
             if (group != null) group.interactable = group.blocksRaycasts = handler != null;
             foreach (var slot in slots) slot.Row.BindResolution(handler);
+            foreach (var row in pool) row.BindResolution(handler);
         }
         private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
 #if UNITY_EDITOR

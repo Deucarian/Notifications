@@ -6,7 +6,9 @@ Open **Notification Lab → Appearance → Change notification to default** to r
 
 The **Notification prefab** selector accepts a custom row prefab. This stores only a project override in `Assets/DeucarianSettings/Resources/Deucarian/Notifications/NotificationViewSettings.asset`. Reset clears that override; it does not copy the default prefab, edit definitions, regenerate code or change notification timers and audio. Default lists follow the package's current `DefaultNotificationRow.prefab`, including after package updates. A connected runtime list switches immediately; future lists load the same project choice.
 
-Instantiate `NotificationViewDefaults.LoadListPrefab()` for a complete default list. Custom adapters can call `NotificationListView.UseProjectRowPrefab()` to opt into the project choice. Existing explicit `Configure(container, template)` callers retain their authored template until they opt in. The old Lab's test-only resolve/timer controls remain in Message controls; they do not change application-owned resolution policy.
+Instantiate `NotificationViewDefaults.LoadListPrefab()` for a complete default list. Its compact card uses a subtle severity tint, the active Light/Dark palette, an icon, title and body. Custom adapters can call `NotificationListView.UseProjectRowPrefab()` to opt into the project choice. Existing explicit `Configure(container, template)` callers retain their authored template until they opt in.
+
+The default Resolve button is available on persistent messages when a lifecycle owner is bound. `NotificationService` binds it automatically; the Lab binds it to its isolated test session. A custom adapter can explicitly bind `INotificationResolutionView.BindResolution`. Read-only condition presenters and timed messages hide the action. This preserves application-owned recovery policy.
 
 ## Asset selection and project defaults
 
