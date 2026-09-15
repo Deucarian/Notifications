@@ -12,9 +12,19 @@ namespace Deucarian.Notifications.Unity
         {
             definition = null;
             if (key == null) return false;
+            var ids = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+            NotificationDefinitionAsset selected = null;
             foreach (var asset in definitions)
-                if (asset != null && asset.Id == key.Id) { definition = asset.CreateDefinition(); return true; }
-            return false;
+            {
+                if (asset == null)
+                    throw new InvalidOperationException("The notification catalog contains a missing definition. Repair it in the Notification Lab.");
+                if (string.IsNullOrWhiteSpace(asset.Id) || !ids.Add(asset.Id))
+                    throw new InvalidOperationException("The notification catalog contains an empty or duplicate ID. Repair it in the Notification Lab.");
+                if (asset.Id == key.Id) selected = asset;
+            }
+            if (selected == null) return false;
+            definition = selected.CreateDefinition();
+            return true;
         }
     }
 }

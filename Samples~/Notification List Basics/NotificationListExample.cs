@@ -6,21 +6,14 @@ namespace Deucarian.Notifications.Samples.Basic
     public sealed class NotificationListExample : MonoBehaviour
     {
         [SerializeField] private NotificationListView listView;
-        private static readonly NotificationDefinition ExampleWarning =
-            new NotificationDefinition(
-                "sample.connection.lost",
-                NotificationSeverity.Warning,
-                "Connection lost",
-                "Please reconnect",
-                100,
-                "deucarian.feedback.audio.warning");
+        private NotificationDefinition ExampleWarning => NotificationDefinitions.Require(catalog, ExampleKeys.Connection);
+        private NotificationDefinition TimedNotice => NotificationDefinitions.Require(catalog, ExampleKeys.Saved);
+        private NotificationCatalogAsset catalog;
 
         private NotificationStore store;
         private NotificationPresenter presenter;
         private NotificationEpisodeController episodes;
-        private static readonly NotificationDefinition TimedNotice = new NotificationDefinition(
-            "sample.saved", NotificationSeverity.Success, "Saved", "This notice expires after five seconds.",
-            10, "deucarian.feedback.audio.success", NotificationLifetime.Timed(5));
+
 
         public NotificationStore Store => store;
 
@@ -41,7 +34,8 @@ namespace Deucarian.Notifications.Samples.Basic
 
         private void OnEnable()
         {
-            store = new NotificationStore();
+            catalog = Resources.Load<NotificationCatalogAsset>(NotificationCatalogAsset.DefaultResourcePath);
+            store = new NotificationStore(definitions: catalog);
             episodes = new NotificationEpisodeController(store, new UnityUnscaledNotificationClock());
             if (listView != null)
             {

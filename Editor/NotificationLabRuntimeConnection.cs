@@ -15,6 +15,7 @@ namespace Deucarian.Notifications.Editor
         private bool disposed;
         private readonly INotificationPresentationTarget presentationTarget;
         private readonly NotificationPresentationSettings originalPresentation;
+        private readonly NotificationEditorDefinitionScope declarations;
 
         public NotificationLabRuntimeConnection(NotificationStore source, NotificationEditorTarget target,
             INotificationClock clock)
@@ -28,6 +29,7 @@ namespace Deucarian.Notifications.Editor
             if (!target.IsAvailable) throw new ArgumentException("The runtime target is no longer active.", nameof(target));
             // Connect an empty session: choosing a destination must never replay or auto-ping old examples.
             if (source.Snapshot.Count != 0) throw new ArgumentException("Reset the lab before connecting.", nameof(source));
+            declarations = target.Store.CreateEditorScope();
             source.SnapshotChanged += OnChanged;
         }
 
@@ -51,8 +53,10 @@ namespace Deucarian.Notifications.Editor
                 NotificationDefinition definition = item.Definition;
                 var id = new NotificationId(prefix + definition.Id.Value);
                 current.Add(id);
-                commands.Add(NotificationCommand.Activate(new NotificationDefinition(id, definition.Severity,
-                    definition.Title, definition.Body, definition.Priority, definition.FeedbackRoleId, definition.Lifetime)));
+                var temporary = new NotificationDefinition(id, definition.Severity,
+                    definition.Title, definition.Body, definition.Priority, definition.FeedbackRoleId, definition.Lifetime);
+                declarations.Register(temporary);
+                commands.Add(NotificationCommand.Activate(temporary));
             }
             foreach (NotificationId id in injected)
                 if (!current.Contains(id)) commands.Add(NotificationCommand.Resolve(id));
@@ -79,6 +83,7 @@ namespace Deucarian.Notifications.Editor
             injected.Clear();
             // Also clean up after the presenter is deactivated, if its store is still alive.
             Apply(commands);
+            declarations.Dispose();
             if (!(target.View is UnityEngine.Object obj) || obj != null)
             {
                 // A deactivated presenter no longer observes cleanup. Refresh before restoring layout.

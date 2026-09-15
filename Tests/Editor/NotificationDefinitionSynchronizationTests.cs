@@ -59,6 +59,33 @@ namespace Deucarian.Notifications.Tests.Editor
         }
 
         [Test]
+        public void RiderImportsAndRegionsKeepCodeAndAssetSynchronizedWithoutReformatting()
+        {
+            var spec = (NotificationDefinitionSpec)schema.Create("RiderFormattingTest");
+            Write(spec);
+            var asset = (NotificationDefinitionAsset)DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
+            string source = File.ReadAllText(SourcePath)
+                .Replace("namespace Deucarian.ProjectDefinitions", "using Deucarian.Notifications;\nusing Deucarian.Notifications.Editor.Definitions;\nusing Deucarian.Notifications.Unity;\nnamespace Deucarian.ProjectDefinitions")
+                .Replace("global::Deucarian.Notifications.Editor.Definitions.", "")
+                .Replace("global::Deucarian.Notifications.Unity.", "")
+                .Replace("global::Deucarian.Notifications.", "")
+                .Replace("        public static", "        #region Public Properties\n        public static")
+                .Replace("        // end-definition-value", "        #endregion\n        // end-definition-value")
+                .Replace("Please reconnect your device.", "Edited after IDE cleanup");
+            File.WriteAllText(SourcePath, source);
+            DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
+            Assert.That(asset.CreateDefinition().Body, Is.EqualTo("Edited after IDE cleanup"));
+            Assert.That(File.ReadAllText(SourcePath), Is.EqualTo(source));
+            var fromAsset = (NotificationDefinitionSpec)schema.Read(asset);
+            fromAsset.Message = "Edited from the asset";
+            schema.Apply(asset, fromAsset);
+            DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
+            Assert.That(((NotificationDefinitionSpec)DeucarianDefinitionSource.Read(schema, File.ReadAllText(SourcePath))).Message,
+                Is.EqualTo(fromAsset.Message));
+            Assert.That(schema.Read(asset).Id, Is.EqualTo(spec.Id));
+        }
+
+        [Test]
         public void ConcurrentEditsRequireExplicitResolutionWithoutDiscardingEitherSide()
         {
             var spec = (NotificationDefinitionSpec)schema.Create("ConflictTest");

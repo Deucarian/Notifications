@@ -39,7 +39,9 @@ namespace Deucarian.Notifications.Tests
                 var instance = Object.Instantiate(Resources.Load<GameObject>(
                     "Deucarian/Notifications/Defaults/DefaultNotificationList"), parent.transform, false);
                 var view = instance.GetComponent<NotificationListView>();
-                var template = view.RowTemplate;
+                var template = Object.Instantiate(view.RowTemplate, parent.transform, false);
+                var container = (RectTransform)instance.transform.Find("Rows");
+                view.Configure(container, template);
                 var authoredFont = Label(template, "Title").font;
                 var themedFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
                     "Packages/com.deucarian.theming/Runtime/Fonts/Montserrat-Regular SDF.asset");
@@ -64,7 +66,7 @@ namespace Deucarian.Notifications.Tests
                 var presentation = NotificationPresentationSettings.Default;
                 presentation.show = presentation.hide = NotificationTransition.None;
                 view.ConfigurePresentation(presentation);
-                using (var store = new NotificationStore())
+                using (var store = new NotificationStore(definitions: new RegisteredTestDefinitions("clone")))
                 using (var presenter = new NotificationPresenter(store, view))
                 {
                     presenter.Activate();

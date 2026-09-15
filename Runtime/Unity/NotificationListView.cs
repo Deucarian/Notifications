@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Deucarian.UI;
+using Deucarian.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,7 +9,7 @@ using UnityEngine.UI;
 namespace Deucarian.Notifications.Unity
 {
     /// <summary>Bounded, keyed presentation. Exiting rows keep their slot until the transition finishes.</summary>
-    public sealed class NotificationListView : MonoBehaviour, INotificationListView, INotificationPresentationTarget
+    public sealed class NotificationListView : MonoBehaviour, INotificationListView, INotificationPresentationTarget, INotificationResolutionView
     {
         private sealed class Slot
         {
@@ -18,6 +19,8 @@ namespace Deucarian.Notifications.Unity
 
         [SerializeField] private RectTransform container;
         [SerializeField] private NotificationRowView rowPrefab;
+        [SerializeField] private bool useProjectRowPrefab;
+        private NotificationViewSettings viewSettings;
         [SerializeField, Range(0f, 1f)] private float normalizedX = 0.05f;
         [SerializeField, Range(0f, 1f)] private float normalizedY = 0.5f;
         [SerializeField] private bool relativeToSafeArea = true;
@@ -30,13 +33,37 @@ namespace Deucarian.Notifications.Unity
         private TMP_Text overflow;
         private readonly DeucarianLayoutTransition overflowMotion = new DeucarianLayoutTransition();
         private bool reconciling;
+        private Action<NotificationId> resolve;
+        public void BindResolution(Action<NotificationId> handler)
+        {
+            resolve = handler;
+            var group = GetComponent<CanvasGroup>();
+            if (group != null) group.interactable = group.blocksRaycasts = handler != null;
+            foreach (var slot in slots) slot.Row.BindResolution(handler);
+            foreach (var row in pool) row.BindResolution(handler);
+        }
         private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
+#if UNITY_EDITOR
+        internal bool EditorPreview { get; set; }
+        internal void AdvancePreview(float seconds) { if (EditorPreview) Advance(seconds); }
+#endif
+        private bool CanAnimate
+        {
+            get
+            {
+#if UNITY_EDITOR
+                if (EditorPreview) return isActiveAndEnabled;
+#endif
+                return isActiveAndEnabled && Application.isPlaying;
+            }
+        }
 
         public int VisibleCount => selected.Count;
         public int OverflowCount => Math.Max(0, snapshot.Count - selected.Count);
         public int RenderedRowCount => slots.Count;
         public NotificationPresentationSettings Presentation => presentation.Sanitized();
         public NotificationRowView RowTemplate => rowPrefab;
+        public bool UsesProjectRowPrefab => useProjectRowPrefab;
         public bool SupportsLazyFollow
         {
             get
@@ -53,8 +80,53 @@ namespace Deucarian.Notifications.Unity
             float x = 0.05f, float y = 0.5f, bool useSafeArea = true)
         {
             container = rowContainer;
-            rowPrefab = template;
+            UnbindViewSettings();
+            viewSettings = null;
+            useProjectRowPrefab = false;
+            ReplaceRowPrefab(template);
             ConfigureAnchor(x, y, useSafeArea);
+        }
+
+        /// <summary>Follows the project choice, including the package prefab whenever Default is selected.</summary>
+        public void UseProjectRowPrefab(NotificationViewSettings settings = null)
+        {
+            UnbindViewSettings();
+            useProjectRowPrefab = true;
+            viewSettings = settings != null ? settings : NotificationViewSettings.Load();
+            if (isActiveAndEnabled && viewSettings != null) viewSettings.Changed += RefreshProjectRowPrefab;
+            RefreshProjectRowPrefab();
+        }
+
+        private void RefreshProjectRowPrefab()
+        {
+            ReplaceRowPrefab(NotificationViewDefaults.ResolveRowPrefab(viewSettings));
+        }
+
+        private void ReplaceRowPrefab(NotificationRowView next)
+        {
+            if (rowPrefab == next) return;
+            foreach (Slot slot in slots)
+            {
+                slot.Row.AppearanceChanged -= Layout;
+                slot.Row.gameObject.SetActive(false);
+                UnityObjectUtility.DestroySafely(slot.Row.gameObject);
+            }
+            slots.Clear();
+            while (pool.Count > 0) UnityObjectUtility.DestroySafely(pool.Pop().gameObject);
+            if (overflow != null)
+            {
+                overflow.gameObject.SetActive(false);
+                UnityObjectUtility.DestroySafely(overflow.gameObject);
+                overflow = null;
+            }
+            rowPrefab = next;
+            // The store, active IDs, timers and feedback are unaffected by changing the view.
+            Render(snapshot);
+        }
+
+        private void UnbindViewSettings()
+        {
+            if (viewSettings != null) viewSettings.Changed -= RefreshProjectRowPrefab;
         }
 
         public void ConfigurePresentation(NotificationPresentationSettings settings)
@@ -86,7 +158,7 @@ namespace Deucarian.Notifications.Unity
 
         private void ReconcileRows()
         {
-            bool animate = Application.isPlaying && isActiveAndEnabled;
+            bool animate = CanAnimate;
             for (int i = slots.Count - 1; i >= 0; i--)
             {
                 Slot slot = slots[i];
@@ -104,11 +176,14 @@ namespace Deucarian.Notifications.Unity
                 else
                 {
                     row = Instantiate(rowPrefab, container, false);
+                    foreach (Transform child in row.GetComponentsInChildren<Transform>(true))
+                        child.gameObject.layer = container.gameObject.layer;
                     row.CopyAuthoredBaselineFrom(rowPrefab);
                 }
                 row.gameObject.SetActive(true);
                 row.name = "Notification " + item.Id.Value;
                 row.Render(item);
+                row.BindResolution(resolve);
                 var motion = new NotificationRowMotion(row);
                 slots.Add(new Slot { Row = row, Motion = motion });
                 row.AppearanceChanged += Layout;
@@ -118,14 +193,22 @@ namespace Deucarian.Notifications.Unity
 
         private void Update()
         {
+#if UNITY_EDITOR
+            if (EditorPreview) return;
+#endif
+            Advance(Time.unscaledDeltaTime);
+        }
+
+        private void Advance(float seconds)
+        {
             bool released = false;
             for (int i = slots.Count - 1; i >= 0; i--)
             {
-                slots[i].Motion.Advance(Time.unscaledDeltaTime);
+                slots[i].Motion.Advance(seconds);
                 if (!slots[i].Motion.IsShowing && slots[i].Motion.IsHidden) { Retire(i); released = true; }
             }
             if (released) Reconcile();
-            overflowMotion.Advance(Time.unscaledDeltaTime);
+            overflowMotion.Advance(seconds);
             if (overflow != null) overflow.rectTransform.anchoredPosition = overflowMotion.Current;
         }
 
@@ -162,7 +245,7 @@ namespace Deucarian.Notifications.Unity
             showing.Sort((a, b) => Rank(a.Row.NotificationId).CompareTo(Rank(b.Row.NotificationId)));
             int next = 0;
             for (int i = 0; i < slots.Count; i++) if (slots[i].Motion.IsShowing) slots[i] = showing[next++];
-            bool animate = Application.isPlaying && isActiveAndEnabled;
+            bool animate = CanAnimate;
             float width = ((RectTransform)rowPrefab.transform).sizeDelta.x;
             float y = 0;
             for (int i = 0; i < slots.Count; i++)
@@ -225,13 +308,24 @@ namespace Deucarian.Notifications.Unity
 
         private void OnDisable()
         {
+            UnbindViewSettings();
             followMotion.Restore(transform);
             foreach (Slot slot in slots) slot.Motion.Complete();
             overflowMotion.Complete();
         }
-        private void LateUpdate() => followMotion.Advance(transform,
-            Presentation.lazyFollow && SupportsLazyFollow, Presentation.follow, Time.unscaledDeltaTime);
-        private void OnEnable() { ApplyAnchor(); if (container != null && rowPrefab != null) Render(snapshot); }
+        private void LateUpdate()
+        {
+#if UNITY_EDITOR
+            if (EditorPreview) return;
+#endif
+            followMotion.Advance(transform, Presentation.lazyFollow && SupportsLazyFollow, Presentation.follow, Time.unscaledDeltaTime);
+        }
+        private void OnEnable()
+        {
+            if (useProjectRowPrefab) UseProjectRowPrefab(viewSettings);
+            ApplyAnchor();
+            if (container != null && rowPrefab != null) Render(snapshot);
+        }
         private void OnValidate() { presentation = Presentation; ApplyAnchor(); }
     }
 }

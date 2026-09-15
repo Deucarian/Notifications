@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 namespace Deucarian.Notifications.Editor
 {
     /// <summary>Interactive editor-only notification lifecycle lab with an isolated store.</summary>
-    public sealed partial class DeucarianNotificationLabWindow : EditorWindow, INotificationListView
+    public sealed partial class DeucarianNotificationLabWindow : EditorWindow, INotificationListView, IDeucarianEditorReloadState
     {
         private sealed class EditorClock : INotificationClock
         {
@@ -35,6 +35,9 @@ namespace Deucarian.Notifications.Editor
         [SerializeField] private NotificationSeverity severity = NotificationSeverity.Warning;
         [SerializeField] private float activationDelay;
         [SerializeField] private float recoveryDelay = 1f;
+        [SerializeField] private int selectedTab;
+        [SerializeField] private bool draftInitialized;
+        internal int SelectedTab { get => selectedTab; set => selectedTab = Mathf.Clamp(value, 0, 3); }
         private double nextRepaint;
 
         public static void OpenWindow()
@@ -49,8 +52,7 @@ namespace Deucarian.Notifications.Editor
 
         private void OnEnable()
         {
-            RestoreDraft();
-            AdoptPaletteSelection();
+            if (!draftInitialized) { ApplyDraft(NotificationLabRecipeStorage.LoadDraft()); AdoptPaletteSelection(); draftInitialized = true; }
             StartSession();
             EditorApplication.update += Tick;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
@@ -61,7 +63,7 @@ namespace Deucarian.Notifications.Editor
         {
             navigation?.Dispose();
             navigation = null;
-            SaveDraft();
+            NotificationLabRecipeStorage.SaveDraft(CaptureDraft());
             workspace?.Dispose();
             workspace = null;
             EditorApplication.update -= Tick;

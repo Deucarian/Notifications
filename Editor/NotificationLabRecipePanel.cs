@@ -9,6 +9,7 @@ namespace Deucarian.Notifications.Editor
     internal sealed class NotificationLabRecipePanel
     {
         [SerializeField] private NotificationLabRecipe recipe;
+        internal NotificationLabRecipe Selection { get => recipe; set => recipe = value; }
         internal void Bind(DeucarianEditorWorkspaceForm form, Func<NotificationLabRecipeData> capture,
             Action<NotificationLabRecipeData> apply)
         {

@@ -17,9 +17,18 @@ namespace Deucarian.Notifications.Unity
         [SerializeField] private Color errorColor = new Color(1f, 0.25f, 0.2f, 1f);
         [SerializeField] private NotificationViewStyle style;
         [SerializeField] private Graphic backgroundGraphic;
+        [SerializeField] private bool stretchSeverityWithRow = true;
         private NotificationSeverity currentSeverity;
         private NotificationRowVisualBaseline baseline;
         private NotificationRowLayout layout;
+        private bool persistent;
+        private System.Action<NotificationId> resolve;
+        internal bool HasResolutionAction => GetComponent<NotificationRowAction>()?.CanResolve == true;
+        internal void BindResolution(System.Action<NotificationId> handler)
+        {
+            resolve = handler;
+            GetComponent<NotificationRowAction>()?.Bind(NotificationId, persistent, resolve);
+        }
 
         public NotificationId NotificationId { get; private set; }
         public Color BodyColor => bodyText != null ? bodyText.color : Color.white;
@@ -41,12 +50,14 @@ namespace Deucarian.Notifications.Unity
             TMP_Text title,
             TMP_Text body,
             Graphic severity,
-            NotificationViewStyle viewStyle = null)
+            NotificationViewStyle viewStyle = null,
+            bool stretchSeverity = true)
         {
             titleText = title;
             bodyText = body;
             severityGraphic = severity;
             style = viewStyle;
+            stretchSeverityWithRow = stretchSeverity;
             baseline = null;
             layout = null;
             DisableRaycasts();
@@ -55,6 +66,7 @@ namespace Deucarian.Notifications.Unity
         public void Render(NotificationItem item)
         {
             NotificationId = item.Id;
+            persistent = item.Definition.Lifetime.Kind == NotificationLifetimeKind.UntilResolved;
             currentSeverity = item.Definition.Severity;
             if (titleText != null)
             {
@@ -76,6 +88,7 @@ namespace Deucarian.Notifications.Unity
 
             DisableRaycasts();
             ApplyAppearance();
+            BindResolution(resolve);
         }
 
         protected override void OnEnable()
@@ -101,9 +114,11 @@ namespace Deucarian.Notifications.Unity
             layout?.Restore();
             var appearance = NotificationRowAppearance.Resolve(theme, style, currentSeverity, baseline.Colors(ResolveSeverityColor(currentSeverity)));
             if (severityGraphic != null) severityGraphic.color = appearance.Severity;
+            GetComponent<NotificationRowDecoration>()?.Apply(currentSeverity, appearance.Severity);
             if (backgroundGraphic != null) backgroundGraphic.color = appearance.Surface;
             if (titleText != null) titleText.color = appearance.Title;
             if (bodyText != null) bodyText.color = appearance.Body;
+            GetComponent<NotificationRowAction>()?.ApplyTheme(theme);
             if (theme.VisualStyle != null && theme.VisualStyle.TypographyProfile != null)
             {
                 ApplyTypography(titleText, DeucarianThemeTextRole.Title, theme.VisualStyle);
@@ -117,7 +132,7 @@ namespace Deucarian.Notifications.Unity
         {
             if (backgroundGraphic == null) backgroundGraphic = GetComponent<Graphic>();
             if (baseline == null) baseline = new NotificationRowVisualBaseline(backgroundGraphic, titleText, bodyText);
-            if (layout == null) layout = new NotificationRowLayout(transform as RectTransform, titleText, bodyText, severityGraphic);
+            if (layout == null) layout = new NotificationRowLayout(transform as RectTransform, titleText, bodyText, severityGraphic, stretchSeverityWithRow);
         }
 
         internal void CopyAuthoredBaselineFrom(NotificationRowView template)
@@ -138,6 +153,7 @@ namespace Deucarian.Notifications.Unity
             layout?.Restore();
             layout?.Fit(true);
             if (severityGraphic != null) severityGraphic.color = ResolveSeverityColor(currentSeverity);
+            GetComponent<NotificationRowDecoration>()?.Apply(currentSeverity, ResolveSeverityColor(currentSeverity));
             AppearanceChanged?.Invoke();
         }
 
@@ -152,12 +168,13 @@ namespace Deucarian.Notifications.Unity
                 ApplyAppearance();
         }
 
-        private static void ApplyTypography(TMP_Text text, DeucarianThemeTextRole role, DeucarianThemeStyle visualStyle)
+        private void ApplyTypography(TMP_Text text, DeucarianThemeTextRole role, DeucarianThemeStyle visualStyle)
         {
             if (text == null) return;
             var target = text.GetComponent<DeucarianTMPThemeTypography>();
             if (target == null) target = text.gameObject.AddComponent<DeucarianTMPThemeTypography>();
             target.TextRole = role;
+            target.MinimumFontSize = style != null ? style.MinimumTextSize : 0;
             target.ApplyStyle(visualStyle);
         }
 

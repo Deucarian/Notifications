@@ -2,6 +2,7 @@
   "name": "Deucarian.Notifications.Unity",
   "rootNamespace": "Deucarian.Notifications.Unity",
   "references": [
+    "Deucarian.Common",
     "Deucarian.Notifications",
     "Deucarian.Theming",
     "Deucarian.UI",

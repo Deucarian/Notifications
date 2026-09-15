@@ -15,7 +15,7 @@ namespace Deucarian.Notifications.Tests
         public void SetUp()
         {
             sink = new RecordingFeedbackSink();
-            store = new NotificationStore(sink);
+            store = new NotificationStore(sink, definitions: new RegisteredTestDefinitions("sample.warning", "sample.first", "sample.second"));
             clock = new FakeClock();
             controller = new NotificationEpisodeController(store, clock);
         }

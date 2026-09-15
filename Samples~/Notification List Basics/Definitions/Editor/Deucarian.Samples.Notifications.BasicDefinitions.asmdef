@@ -1,0 +1,14 @@
+{
+  "name": "Deucarian.Samples.Notifications.BasicDefinitions",
+  "references": [
+    "Deucarian.Editor",
+    "Deucarian.Notifications.Editor",
+    "Deucarian.Notifications",
+    "Deucarian.Notifications.Unity",
+    "Deucarian.Theming"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}

@@ -1,8 +1,28 @@
 # Deucarian Notifications
 
+## Default notification prefab
+
+Open **Notification Lab → Appearance → Change notification to default** to restore the package's bordered card with its severity icon. The Lab renders this actual runtime prefab. Colours, severity and typography continue to resolve through Theming.
+
+The **Notification prefab** selector accepts a custom row prefab. This stores only a project override in `Assets/DeucarianSettings/Resources/Deucarian/Notifications/NotificationViewSettings.asset`. Reset clears that override; it does not copy the default prefab, edit definitions, regenerate code or change notification timers and audio. Default lists follow the package's current `DefaultNotificationRow.prefab`, including after package updates. A connected runtime list switches immediately; future lists load the same project choice.
+
+Instantiate `NotificationViewDefaults.LoadListPrefab()` for a complete default list. Its compact card uses a subtle severity tint, the active Light/Dark palette, an icon, title and body. Custom adapters can call `NotificationListView.UseProjectRowPrefab()` to opt into the project choice. Existing explicit `Configure(container, template)` callers retain their authored template until they opt in.
+
+The default Resolve button is available on persistent messages when a lifecycle owner is bound. `NotificationService` binds it automatically; the Lab binds it to its isolated test session. A custom adapter can explicitly bind `INotificationResolutionView.BindResolution`. Read-only condition presenters and timed messages hide the action. This preserves application-owned recovery policy.
+
 ## Asset selection and project defaults
 
 Notification Lab's audio selector uses the configured project audio palette, falling back to the bundled Deucarian palette. Choose can find project and installed package assets; Create and Customize make project assets explicitly. The recipe picker can create a recipe from the current lab configuration; select a recipe and choose Load to apply it. Merely opening the Lab does not save a recipe or change runtime configuration.
+
+## Registered definitions are required
+
+Every activation, including `NotificationStore.ApplyBatch` and delayed conditions, must resolve an ID from the explicitly assigned catalog. Unknown IDs throw before state, events or feedback change. Creating a `NotificationDefinition` or `NotificationKey` alone is not registration. Content overrides remain supported for registered IDs.
+
+Create definitions in the Lab's Definitions tab. The generated project catalog is loaded by `NotificationHost`; custom hosts pass it to `new NotificationStore(feedback, catalog)`. `Warn` preserves the registered warning's policy and rejects keys registered with a different severity.
+
+The Lab renders the real runtime prefab in an isolated preview scene. Its temporary test messages use editor-only scoped declarations, never project definitions, and are removed on disconnect. Create a definition explicitly to use that message in the app.
+
+The sandbox follows the Light/Dark mode and style selected in **Visual palettes**, including an unsaved style composer draft. Its caption identifies a **Visual palettes draft** and directs you to **Apply to project** when it differs from the project default. This preview does not save or activate the theme. A connected running list instead previews that list's actual theme override/provider. Tabs, composer inputs and definition selections survive script reload; temporary messages and runtime connections are released.
 
 ## Typed definition workflow
 
@@ -46,7 +66,7 @@ resolve colors from Theming. Disabling it restores authored runtime row colors
 and typography. The editor-only sandbox uses the package's default row style;
 a connected runtime list uses its theme override/provider and view-style roles.
 Lazy follow still requires a running XR/camera-space list and never moves an
-editor scene camera. Requires Editor 1.11.0 and Theming 1.7.0.
+editor scene camera. Requires Editor 1.15.0 and Theming 1.14.0.
 
 ## In-window navigation
 
