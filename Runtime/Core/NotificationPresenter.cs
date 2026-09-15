@@ -7,6 +7,12 @@ namespace Deucarian.Notifications
         void Render(NotificationSnapshot snapshot);
     }
 
+    /// <summary>Optional manual resolution; the lifecycle owner supplies the command.</summary>
+    public interface INotificationResolutionView
+    {
+        void BindResolution(Action<NotificationId> resolve);
+    }
+
     /// <summary>Connects one notification store to a replaceable list view.</summary>
     public sealed class NotificationPresenter : IDisposable
     {

@@ -25,11 +25,17 @@ namespace Deucarian.Notifications.Unity
                 : severity == NotificationSeverity.Warning ? DeucarianBuiltinColorRoleIds.Warning
                 : severity == NotificationSeverity.Success ? DeucarianBuiltinColorRoleIds.Success : DeucarianBuiltinColorRoleIds.Info;
             Color surface = Resolve(theme, style != null ? style.SurfaceRole : DeucarianBuiltinColorRoleIds.SurfaceRaised, fallback.Surface);
-            if (theme.VisualStyle != null) surface = theme.VisualStyle.ResolveSurfaceColor(surface);
+            Color severityColor = Resolve(theme, severityRole, style != null ? style.Resolve(severity) : fallback.Severity);
+            if (style != null && style.SeverityTint > 0) surface = Color.Lerp(surface, severityColor, style.SeverityTint);
+            if (theme.VisualStyle != null && (style == null || style.UseThemeSurfaceTreatment)) surface = theme.VisualStyle.ResolveSurfaceColor(surface);
+            Color title = Resolve(theme, style != null ? style.TitleRole : DeucarianBuiltinColorRoleIds.TextPrimary, fallback.Title);
+            Color body = Resolve(theme, style != null ? style.BodyRole : DeucarianBuiltinColorRoleIds.TextSecondary, fallback.Body);
+            Color backdrop = Resolve(theme, DeucarianBuiltinColorRoleIds.Background, surface);
+            Color visibleSurface = DeucarianForegroundContrast.Composite(surface, backdrop);
+            var foregrounds = DeucarianForegroundPalette.FromTheme(theme, backdrop, title);
             return new NotificationRowAppearance(surface,
-                Resolve(theme, style != null ? style.TitleRole : DeucarianBuiltinColorRoleIds.TextPrimary, fallback.Title),
-                Resolve(theme, style != null ? style.BodyRole : DeucarianBuiltinColorRoleIds.TextSecondary, fallback.Body),
-                Resolve(theme, severityRole, style != null ? style.Resolve(severity) : fallback.Severity));
+                DeucarianForegroundContrast.Resolve(title, visibleSurface, foregrounds),
+                DeucarianForegroundContrast.Resolve(body, visibleSurface, foregrounds), severityColor);
         }
 
         private static Color Resolve(DeucarianTheme theme, string role, Color fallback) =>

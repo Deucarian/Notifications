@@ -12,12 +12,15 @@ namespace Deucarian.Notifications.Editor
     /// <summary>Renders the package's real uGUI list in an isolated preview scene, without a second row implementation.</summary>
     internal sealed class NotificationRuntimePreview : IDisposable
     {
-        private const float Width = 720;
+        private float Width => template != null ? Mathf.Max(720, ((RectTransform)template.transform).sizeDelta.x + 80) : 720;
         private readonly VisualElement root;
         private readonly bool autoAdvance;
+        private readonly Action<NotificationId> resolve;
         private double lastRenderTime;
         private readonly UnityEngine.UIElements.Image image;
         private readonly Label status;
+        private readonly NotificationPreviewTheme previewTheme = new NotificationPreviewTheme();
+        private int themeRevision;
         private PreviewRenderUtility renderer;
         private GameObject canvasObject;
         private RectTransform canvasRect;
@@ -30,9 +33,11 @@ namespace Deucarian.Notifications.Editor
         private bool disposed;
         private bool dirty = true;
 
-        internal NotificationRuntimePreview(DeucarianEditorLabWorkspace workspace, bool autoAdvance = true)
+        internal NotificationRuntimePreview(DeucarianEditorLabWorkspace workspace, bool autoAdvance = true,
+            Action<NotificationId> resolve = null)
         {
             this.autoAdvance = autoAdvance;
+            this.resolve = resolve;
             root = DeucarianEditorWorkspaceControls.Region("notification-runtime-preview", "dw-lab-preview");
             root.style.flexShrink = 0;
             image = new UnityEngine.UIElements.Image { name = "notification-runtime-image", scaleMode = ScaleMode.ScaleToFit };
@@ -41,6 +46,7 @@ namespace Deucarian.Notifications.Editor
             image.style.flexGrow = 0;
             image.style.flexShrink = 0;
             image.RegisterCallback<GeometryChangedEvent>(OnImageGeometryChanged);
+            image.RegisterCallback<PointerUpEvent>(OnPointerUp);
             root.Add(image);
             status = DeucarianEditorWorkspaceControls.Label("Runtime notification prefab", "dw-muted");
             root.Add(status);
@@ -51,6 +57,7 @@ namespace Deucarian.Notifications.Editor
 
         internal NotificationListView List => list;
         internal bool HasRenderedFrame { get; private set; }
+        internal string ThemeDescription => previewTheme.Description;
 
         internal void Configure(NotificationPresentationSettings value, Component runtimeView)
         {
@@ -61,14 +68,18 @@ namespace Deucarian.Notifications.Editor
             if (list == null) return;
             var next = value.Sanitized();
             if (!settings.Equals(next)) { settings = next; list.ConfigurePresentation(settings); dirty = true; }
-            DeucarianTheme theme = source != null ? source.ThemeOverride : null;
-            var provider = runtimeView != null ? DeucarianThemeRuntimeResolver.FindProvider(runtimeView) : null;
-            if (theme == null && provider != null) theme = provider.CurrentTheme;
-            if (theme == null) theme = DeucarianThemeRuntimeResolver.ResolveDefaultTheme();
-            if (template.ThemeOverride != theme)
+            DeucarianTheme theme = previewTheme.Resolve(source, runtimeView);
+            status.text = previewTheme.Description;
+            if (template.ThemeOverride != theme || themeRevision != previewTheme.Revision)
             {
+                themeRevision = previewTheme.Revision;
                 template.ThemeOverride = theme;
-                foreach (var row in list.GetComponentsInChildren<NotificationRowView>(true)) row.ThemeOverride = theme;
+                template.ApplyTheme(theme);
+                foreach (var row in list.GetComponentsInChildren<NotificationRowView>(true))
+                {
+                    row.ThemeOverride = theme;
+                    row.ApplyTheme(theme);
+                }
                 dirty = true;
             }
         }
@@ -96,6 +107,7 @@ namespace Deucarian.Notifications.Editor
         private void Create(NotificationRowView source)
         {
             ReleaseRenderer();
+            previewTheme.Dispose();
             sourceTemplate = source;
             var prefab = NotificationViewDefaults.LoadListPrefab();
             if (prefab == null) { status.text = "The runtime notification prefab is missing. Repair the package view assets."; return; }
@@ -125,6 +137,7 @@ namespace Deucarian.Notifications.Editor
             var container = instance.GetComponent<RectTransform>();
             // Frame the list near the top of the preview; row geometry remains prefab-owned.
             list.Configure(container, template, .03f, .95f, false);
+            list.BindResolution(resolve);
             list.EditorPreview = true;
             list.ConfigurePresentation(settings);
             dirty = true;
@@ -165,6 +178,23 @@ namespace Deucarian.Notifications.Editor
             if (!Mathf.Approximately(evt.newRect.width, evt.oldRect.width)) FitImageToWidth();
         }
 
+        private void OnPointerUp(PointerUpEvent evt)
+        {
+            if (evt.button != 0 || renderer == null || list == null || image.contentRect.width <= 0 || image.contentRect.height <= 0) return;
+            Rect pixels = renderer.camera.pixelRect;
+            Vector2 point = new Vector2(pixels.x + evt.localPosition.x / image.contentRect.width * pixels.width,
+                pixels.y + (1 - evt.localPosition.y / image.contentRect.height) * pixels.height);
+            foreach (var action in list.GetComponentsInChildren<NotificationRowAction>())
+            {
+                var button = action.Button;
+                if (button == null || !button.IsInteractable() || !action.CanResolve) continue;
+                if (!RectTransformUtility.RectangleContainsScreenPoint((RectTransform)button.transform, point, renderer.camera)) continue;
+                button.onClick.Invoke();
+                evt.StopPropagation();
+                break;
+            }
+        }
+
         private void FitImageToWidth()
         {
             if (image.image == null || image.image.width <= 0) return;
@@ -189,7 +219,9 @@ namespace Deucarian.Notifications.Editor
             disposed = true;
             EditorApplication.update -= Tick;
             image.UnregisterCallback<GeometryChangedEvent>(OnImageGeometryChanged);
+            image.UnregisterCallback<PointerUpEvent>(OnPointerUp);
             ReleaseRenderer();
+            previewTheme.Dispose();
         }
     }
 }
