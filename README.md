@@ -12,6 +12,8 @@ Create definitions in the Lab's Definitions tab. The generated project catalog i
 
 The Lab renders the real runtime prefab in an isolated preview scene. Its temporary test messages use editor-only scoped declarations, never project definitions, and are removed on disconnect. Create a definition explicitly to use that message in the app.
 
+The sandbox follows the Light/Dark mode and style selected in **Visual palettes**, including an unsaved style composer draft. Its caption identifies a **Visual palettes draft** and directs you to **Apply to project** when it differs from the project default. This preview does not save or activate the theme. A connected running list instead previews that list's actual theme override/provider. Tabs, composer inputs and definition selections survive script reload; temporary messages and runtime connections are released.
+
 ## Typed definition workflow
 
 Create or edit the notification in Definitions or the Notification Lab. Its title, message and audio policy are reused here.
@@ -54,7 +56,7 @@ resolve colors from Theming. Disabling it restores authored runtime row colors
 and typography. The editor-only sandbox uses the package's default row style;
 a connected runtime list uses its theme override/provider and view-style roles.
 Lazy follow still requires a running XR/camera-space list and never moves an
-editor scene camera. Requires Editor 1.14.0 and Theming 1.13.0.
+editor scene camera. Requires Editor 1.15.0 and Theming 1.14.0.
 
 ## In-window navigation
 

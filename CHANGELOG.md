@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.1] - 2026-09-15
+
+- Render sandbox notifications with the staged visual theme and explain draft versus runtime selection. Preserve Lab tabs, selection and authoring state through reload.
+
+
 ## [0.6.0] - 2026-09-15
 
 - Require registered definitions at the store and scheduler boundary, including direct C# calls. Reject invalid batches before state or feedback changes.
