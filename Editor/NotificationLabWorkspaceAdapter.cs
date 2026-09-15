@@ -85,6 +85,7 @@ namespace Deucarian.Notifications.Editor
         private void BindAppearance()
         {
             var form = view.Appearance;
+            NotificationPrefabSelection.Bind(form, () => host.Connection?.Target.View as Component);
             form.Stepper("lab-maximum", "Visible messages", 1, 20, () => host.Inputs.presentation.maxVisible,
                 value => Change(x => x.presentation.maxVisible = Mathf.Clamp(value, 1, 20)));
             var overflow = form.Choice("lab-overflow-policy", "Overflow", new[] { "Queue" }, () => 0, _ => { });

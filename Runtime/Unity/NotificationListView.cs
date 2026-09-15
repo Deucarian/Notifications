@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Deucarian.UI;
+using Deucarian.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,8 @@ namespace Deucarian.Notifications.Unity
 
         [SerializeField] private RectTransform container;
         [SerializeField] private NotificationRowView rowPrefab;
+        [SerializeField] private bool useProjectRowPrefab;
+        private NotificationViewSettings viewSettings;
         [SerializeField, Range(0f, 1f)] private float normalizedX = 0.05f;
         [SerializeField, Range(0f, 1f)] private float normalizedY = 0.5f;
         [SerializeField] private bool relativeToSafeArea = true;
@@ -51,6 +54,7 @@ namespace Deucarian.Notifications.Unity
         public int RenderedRowCount => slots.Count;
         public NotificationPresentationSettings Presentation => presentation.Sanitized();
         public NotificationRowView RowTemplate => rowPrefab;
+        public bool UsesProjectRowPrefab => useProjectRowPrefab;
         public bool SupportsLazyFollow
         {
             get
@@ -67,8 +71,53 @@ namespace Deucarian.Notifications.Unity
             float x = 0.05f, float y = 0.5f, bool useSafeArea = true)
         {
             container = rowContainer;
-            rowPrefab = template;
+            UnbindViewSettings();
+            viewSettings = null;
+            useProjectRowPrefab = false;
+            ReplaceRowPrefab(template);
             ConfigureAnchor(x, y, useSafeArea);
+        }
+
+        /// <summary>Follows the project choice, including the package prefab whenever Default is selected.</summary>
+        public void UseProjectRowPrefab(NotificationViewSettings settings = null)
+        {
+            UnbindViewSettings();
+            useProjectRowPrefab = true;
+            viewSettings = settings != null ? settings : NotificationViewSettings.Load();
+            if (isActiveAndEnabled && viewSettings != null) viewSettings.Changed += RefreshProjectRowPrefab;
+            RefreshProjectRowPrefab();
+        }
+
+        private void RefreshProjectRowPrefab()
+        {
+            ReplaceRowPrefab(NotificationViewDefaults.ResolveRowPrefab(viewSettings));
+        }
+
+        private void ReplaceRowPrefab(NotificationRowView next)
+        {
+            if (rowPrefab == next) return;
+            foreach (Slot slot in slots)
+            {
+                slot.Row.AppearanceChanged -= Layout;
+                slot.Row.gameObject.SetActive(false);
+                UnityObjectUtility.DestroySafely(slot.Row.gameObject);
+            }
+            slots.Clear();
+            while (pool.Count > 0) UnityObjectUtility.DestroySafely(pool.Pop().gameObject);
+            if (overflow != null)
+            {
+                overflow.gameObject.SetActive(false);
+                UnityObjectUtility.DestroySafely(overflow.gameObject);
+                overflow = null;
+            }
+            rowPrefab = next;
+            // The store, active IDs, timers and feedback are unaffected by changing the view.
+            Render(snapshot);
+        }
+
+        private void UnbindViewSettings()
+        {
+            if (viewSettings != null) viewSettings.Changed -= RefreshProjectRowPrefab;
         }
 
         public void ConfigurePresentation(NotificationPresentationSettings settings)
@@ -118,6 +167,8 @@ namespace Deucarian.Notifications.Unity
                 else
                 {
                     row = Instantiate(rowPrefab, container, false);
+                    foreach (Transform child in row.GetComponentsInChildren<Transform>(true))
+                        child.gameObject.layer = container.gameObject.layer;
                     row.CopyAuthoredBaselineFrom(rowPrefab);
                 }
                 row.gameObject.SetActive(true);
@@ -247,6 +298,7 @@ namespace Deucarian.Notifications.Unity
 
         private void OnDisable()
         {
+            UnbindViewSettings();
             followMotion.Restore(transform);
             foreach (Slot slot in slots) slot.Motion.Complete();
             overflowMotion.Complete();
@@ -258,7 +310,12 @@ namespace Deucarian.Notifications.Unity
 #endif
             followMotion.Advance(transform, Presentation.lazyFollow && SupportsLazyFollow, Presentation.follow, Time.unscaledDeltaTime);
         }
-        private void OnEnable() { ApplyAnchor(); if (container != null && rowPrefab != null) Render(snapshot); }
+        private void OnEnable()
+        {
+            if (useProjectRowPrefab) UseProjectRowPrefab(viewSettings);
+            ApplyAnchor();
+            if (container != null && rowPrefab != null) Render(snapshot);
+        }
         private void OnValidate() { presentation = Presentation; ApplyAnchor(); }
     }
 }

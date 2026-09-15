@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0] - 2026-09-15
+
+- Restore the Lab's icon-and-border card as a package-owned runtime row prefab, shared by the Lab and default lists.
+- Add a project notification prefab selector and **Change notification to default** in Appearance. Default follows the package prefab without copying it into Assets.
+- Preserve active notification state, timers and feedback when changing row prefabs; retain the chosen prefab across disable/enable.
+- Keep severity icons square when themed typography increases the row height.
+- Fit the real runtime preview to its pane without squeezing the card, and inherit runtime canvas layers for external row prefabs.
+
 ## [0.6.0] - 2026-09-15
 
 - Require registered definitions at the store and scheduler boundary, including direct C# calls. Reject invalid batches before state or feedback changes.

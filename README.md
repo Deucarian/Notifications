@@ -1,5 +1,13 @@
 # Deucarian Notifications
 
+## Default notification prefab
+
+Open **Notification Lab → Appearance → Change notification to default** to restore the package's bordered card with its severity icon. The Lab renders this actual runtime prefab. Colours, severity and typography continue to resolve through Theming.
+
+The **Notification prefab** selector accepts a custom row prefab. This stores only a project override in `Assets/DeucarianSettings/Resources/Deucarian/Notifications/NotificationViewSettings.asset`. Reset clears that override; it does not copy the default prefab, edit definitions, regenerate code or change notification timers and audio. Default lists follow the package's current `DefaultNotificationRow.prefab`, including after package updates. A connected runtime list switches immediately; future lists load the same project choice.
+
+Instantiate `NotificationViewDefaults.LoadListPrefab()` for a complete default list. Custom adapters can call `NotificationListView.UseProjectRowPrefab()` to opt into the project choice. Existing explicit `Configure(container, template)` callers retain their authored template until they opt in. The old Lab's test-only resolve/timer controls remain in Message controls; they do not change application-owned resolution policy.
+
 ## Asset selection and project defaults
 
 Notification Lab's audio selector uses the configured project audio palette, falling back to the bundled Deucarian palette. Choose can find project and installed package assets; Create and Customize make project assets explicitly. The recipe picker can create a recipe from the current lab configuration; select a recipe and choose Load to apply it. Merely opening the Lab does not save a recipe or change runtime configuration.
