@@ -4,6 +4,14 @@
 
 Notification Lab's audio selector uses the configured project audio palette, falling back to the bundled Deucarian palette. Choose can find project and installed package assets; Create and Customize make project assets explicitly. The recipe picker can create a recipe from the current lab configuration; select a recipe and choose Load to apply it. Merely opening the Lab does not save a recipe or change runtime configuration.
 
+## Registered definitions are required
+
+Every activation, including `NotificationStore.ApplyBatch` and delayed conditions, must resolve an ID from the explicitly assigned catalog. Unknown IDs throw before state, events or feedback change. Creating a `NotificationDefinition` or `NotificationKey` alone is not registration. Content overrides remain supported for registered IDs.
+
+Create definitions in the Lab's Definitions tab. The generated project catalog is loaded by `NotificationHost`; custom hosts pass it to `new NotificationStore(feedback, catalog)`. `Warn` preserves the registered warning's policy and rejects keys registered with a different severity.
+
+The Lab renders the real runtime prefab in an isolated preview scene. Its temporary test messages use editor-only scoped declarations, never project definitions, and are removed on disconnect. Create a definition explicitly to use that message in the app.
+
 ## Typed definition workflow
 
 Create or edit the notification in Definitions or the Notification Lab. Its title, message and audio policy are reused here.
@@ -46,7 +54,7 @@ resolve colors from Theming. Disabling it restores authored runtime row colors
 and typography. The editor-only sandbox uses the package's default row style;
 a connected runtime list uses its theme override/provider and view-style roles.
 Lazy follow still requires a running XR/camera-space list and never moves an
-editor scene camera. Requires Editor 1.11.0 and Theming 1.7.0.
+editor scene camera. Requires Editor 1.14.0 and Theming 1.13.0.
 
 ## In-window navigation
 

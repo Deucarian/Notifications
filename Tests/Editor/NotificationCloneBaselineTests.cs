@@ -64,7 +64,7 @@ namespace Deucarian.Notifications.Tests
                 var presentation = NotificationPresentationSettings.Default;
                 presentation.show = presentation.hide = NotificationTransition.None;
                 view.ConfigurePresentation(presentation);
-                using (var store = new NotificationStore())
+                using (var store = new NotificationStore(definitions: new RegisteredTestDefinitions("clone")))
                 using (var presenter = new NotificationPresenter(store, view))
                 {
                     presenter.Activate();

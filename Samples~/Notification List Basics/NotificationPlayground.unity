@@ -1677,7 +1677,6 @@ MonoBehaviour:
     definitionId: sample.playground.connection
   title: Connection lost
   message: Reconnect the device, then press Resolve.
-  timedSeconds: 3
 --- !u!114 &1875949462
 MonoBehaviour:
   m_ObjectHideFlags: 0

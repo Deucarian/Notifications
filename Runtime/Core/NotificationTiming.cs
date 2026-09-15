@@ -103,8 +103,10 @@ namespace Deucarian.Notifications
             }
 
             ThrowIfDisposed();
+            var validated = new List<NotificationConditionSample>(samples);
+            foreach (var sample in validated) store.ValidateDefinition(sample.Definition);
             double now = clock.NowSeconds;
-            foreach (NotificationConditionSample sample in samples)
+            foreach (NotificationConditionSample sample in validated)
             {
                 UpdateState(sample, now);
             }

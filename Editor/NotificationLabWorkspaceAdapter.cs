@@ -22,7 +22,7 @@ namespace Deucarian.Notifications.Editor
         private bool disposed;
         private NotificationLabAudioPanel audioPanel;
         private Deucarian.Editor.Definitions.DeucarianDefinitionPanel definitions;
-        private readonly NotificationLabRowPreview preview;
+        private readonly NotificationRuntimePreview preview;
 
         internal NotificationLabWorkspaceAdapter(VisualElement root, DeucarianNotificationLabWindow host)
         {
@@ -36,7 +36,7 @@ namespace Deucarian.Notifications.Editor
             BindComposer();
             BindAppearance();
             BindAudio();
-            preview = new NotificationLabRowPreview(view);
+            preview = new NotificationRuntimePreview(view);
             var replay = DeucarianEditorWorkspaceControls.IconButton("Replay entrance", DeucarianEditorIconIds.Play,
                 preview.Replay);
             replay.name = "motion-preview-play";
@@ -140,6 +140,7 @@ namespace Deucarian.Notifications.Editor
                 foreach (var item in visibleSnapshot.Items) { visible.Add(Row(item)); visibleIds.Add(item.Id); }
                 foreach (var item in host.Snapshot.Items) if (!visibleIds.Contains(item.Id)) hidden.Add(Row(item));
                 view.SetMessages(visible, hidden, host.Session?.PendingCount ?? 0);
+                preview.Render(host.Snapshot);
                 view.RefreshForms();
                 audioPanel.Refresh();
                 view.Workspace.FooterLeading.text = host.Session == null ? "Session restarting…"

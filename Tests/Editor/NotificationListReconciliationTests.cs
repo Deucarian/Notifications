@@ -55,7 +55,7 @@ namespace Deucarian.Notifications.Tests
         {
             private readonly GameObject instance;
             private readonly NotificationPresenter presenter;
-            internal readonly NotificationStore Store = new NotificationStore();
+            internal readonly NotificationStore Store = new NotificationStore(definitions: new RegisteredTestDefinitions("a", "b", "c", "d", "e"));
             internal readonly NotificationListView View;
             internal NotificationRowView[] Rows => instance.GetComponentsInChildren<NotificationRowView>()
                 .OrderBy(row => row.transform.GetSiblingIndex()).ToArray();

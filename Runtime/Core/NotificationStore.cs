@@ -14,6 +14,10 @@ namespace Deucarian.Notifications
         private readonly Dictionary<NotificationId, NotificationItem> active =
             new Dictionary<NotificationId, NotificationItem>();
         private readonly INotificationFeedbackSink feedbackSink;
+        private readonly INotificationDefinitions definitions;
+#if UNITY_EDITOR
+        private readonly List<NotificationEditorDefinitionScope> editorScopes = new List<NotificationEditorDefinitionScope>();
+#endif
         private readonly DiagnosticProviderRegistration diagnosticsRegistration;
 
         private NotificationSnapshot snapshot = NotificationSnapshot.Empty;
@@ -23,15 +27,64 @@ namespace Deucarian.Notifications
         private long feedbackFailureCount;
         private bool disposed;
 
-        public NotificationStore(INotificationFeedbackSink feedbackSink = null)
+        public NotificationStore(INotificationFeedbackSink feedbackSink = null, INotificationDefinitions definitions = null)
         {
             this.feedbackSink = feedbackSink;
+            this.definitions = definitions;
             string runtimeId = Interlocked.Increment(ref nextRuntimeId).ToString();
             diagnosticsRegistration = DiagnosticProviderRegistry.Register(
                 new NotificationDiagnosticProvider("notifications." + runtimeId, CaptureDiagnostics));
         }
 
         public event EventHandler<NotificationChangedEventArgs> SnapshotChanged;
+
+        public void ValidateDefinition(NotificationDefinition definition)
+        {
+            ThrowIfDisposed();
+            if (definition == null) throw new ArgumentNullException(nameof(definition));
+#if UNITY_EDITOR
+            lock (syncRoot)
+                foreach (var scope in editorScopes)
+                    if (scope.Contains(definition.Id)) return;
+#endif
+            NotificationDefinitions.Require(definitions, definition.Id);
+        }
+
+#if UNITY_EDITOR
+        internal NotificationEditorDefinitionScope CreateEditorScope()
+        {
+            ThrowIfDisposed();
+            var scope = new NotificationEditorDefinitionScope(this);
+            lock (syncRoot) editorScopes.Add(scope);
+            return scope;
+        }
+
+        internal void ValidateEditorRegistration(NotificationEditorDefinitionScope owner, NotificationDefinition definition)
+        {
+            ThrowIfDisposed();
+            lock (syncRoot)
+            {
+                if (definitions != null && definitions.TryGet(new EditorLookupKey(definition.Id.Value), out _))
+                    throw new InvalidOperationException("Temporary Lab messages cannot replace a registered application definition.");
+                foreach (var scope in editorScopes)
+                    if (!ReferenceEquals(scope, owner) && scope.Contains(definition.Id))
+                        throw new InvalidOperationException("This temporary definition belongs to another Lab session.");
+            }
+        }
+
+        private sealed class EditorLookupKey : NotificationKey { internal EditorLookupKey(string id) : base(id) { } }
+
+        internal void RemoveEditorScope(NotificationEditorDefinitionScope scope)
+        {
+            lock (syncRoot) editorScopes.Remove(scope);
+            if (!disposed)
+            {
+                var commands = new List<NotificationCommand>();
+                foreach (var id in scope.Ids) commands.Add(NotificationCommand.Resolve(id));
+                ApplyBatch(commands, 0);
+            }
+        }
+#endif
 
         public NotificationSnapshot Snapshot
         {
@@ -56,6 +109,8 @@ namespace Deucarian.Notifications
             ThrowIfDisposed();
             List<NotificationCommand> finalCommands =
                 CoalesceCommands(commands);
+            foreach (NotificationCommand command in finalCommands)
+                if (command.IsActive) ValidateDefinition(command.Definition);
             List<NotificationId> activated = new List<NotificationId>();
             List<NotificationId> resolved = new List<NotificationId>();
             List<NotificationDefinition> activatedDefinitions =
@@ -165,6 +220,9 @@ namespace Deucarian.Notifications
 
                 disposed = true;
                 active.Clear();
+#if UNITY_EDITOR
+                editorScopes.Clear();
+#endif
                 snapshot = NotificationSnapshot.Empty;
                 SnapshotChanged = null;
             }
