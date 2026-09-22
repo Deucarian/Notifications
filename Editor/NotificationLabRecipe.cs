@@ -12,6 +12,7 @@ namespace Deucarian.Notifications.Editor
         public string body = "This is a test notification. Resolve it to simulate recovery.";
         public NotificationSeverity severity = NotificationSeverity.Warning;
         public NotificationLifetimeKind lifetime;
+        public bool allowManualResolution = true;
         public float lifetimeSeconds = 5;
         public float activationDelay;
         public float recoveryDelay = 1;

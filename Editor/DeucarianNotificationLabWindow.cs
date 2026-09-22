@@ -152,7 +152,7 @@ namespace Deucarian.Notifications.Editor
             if (session == null || lastCustomId.IsEmpty || string.IsNullOrWhiteSpace(messageTitle)) return;
             audio.Configure(paletteSet, experience, soundEnabled && runtimeConnection == null);
             session.Show(new NotificationDefinition(lastCustomId, severity, messageTitle, messageBody,
-                (int)severity * 10, NotificationLabSession.FeedbackRole(severity), Lifetime()), Timing());
+                (int)severity * 10, NotificationLabSession.FeedbackRole(severity), Lifetime(), allowManualResolution), Timing());
         }
 
         internal void AddCustom()
@@ -250,9 +250,9 @@ namespace Deucarian.Notifications.Editor
                 string.IsNullOrEmpty(guid) ? null : "palette:" + guid);
         }
         internal void ShowThree() => session?.ShowBatch(new[] {
-            NotificationLabSession.Example(NotificationSeverity.Info, Lifetime()),
-            NotificationLabSession.Example(NotificationSeverity.Warning, Lifetime()),
-            NotificationLabSession.Example(NotificationSeverity.Error, Lifetime()) }, Timing());
+            NotificationLabSession.Example(NotificationSeverity.Info, Lifetime(), allowManualResolution),
+            NotificationLabSession.Example(NotificationSeverity.Warning, Lifetime(), allowManualResolution),
+            NotificationLabSession.Example(NotificationSeverity.Error, Lifetime(), allowManualResolution) }, Timing());
 
         internal NotificationLabSession SessionForTests => session;
         internal void DisableForTests() => OnDisable();

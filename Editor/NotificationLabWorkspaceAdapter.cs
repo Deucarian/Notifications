@@ -65,11 +65,14 @@ namespace Deucarian.Notifications.Editor
                 value => Change(x => x.lifetime = (NotificationLifetimeKind)value));
             var seconds = form.Number("lab-duration", "Seconds", () => host.Inputs.lifetimeSeconds, value => Change(x => x.lifetimeSeconds = value));
             form.VisibleWhen(seconds, () => host.Inputs.lifetime == NotificationLifetimeKind.Timed);
+            var manual = form.Toggle("lab-manual-resolution", "Allow manual resolution", () => host.Inputs.allowManualResolution,
+                value => Change(x => x.allowManualResolution = value));
+            form.VisibleWhen(manual, () => host.Inputs.lifetime == NotificationLifetimeKind.UntilResolved);
             form.Action("lab-add", "Add message", host.AddCustom, () => host.Session != null && !string.IsNullOrWhiteSpace(host.Inputs.title), true);
             var advanced = form.Section("More options", true);
             var scenarios = advanced.Section("Test scenarios", true);
             scenarios.Action("lab-timed", "Timed notice · 5 seconds", () => { Change(x => { x.lifetime = NotificationLifetimeKind.Timed; x.lifetimeSeconds = 5; }); host.AddCustom(); });
-            scenarios.Action("lab-persistent", "Persistent warning · resolve manually", () => { Change(x => x.lifetime = NotificationLifetimeKind.UntilResolved); host.AddCustom(); });
+            scenarios.Action("lab-persistent", "Persistent warning · resolve manually", () => { Change(x => { x.lifetime = NotificationLifetimeKind.UntilResolved; x.allowManualResolution = true; }); host.AddCustom(); });
             scenarios.Action("lab-three", "Show three at once", host.ShowThree);
             scenarios.Action("lab-overflow-test", "Add 10 mixed messages", host.ShowMixed);
             scenarios.Action("lab-repeat", "Repeat same message 10×", host.RepeatLast);
@@ -213,6 +216,7 @@ namespace Deucarian.Notifications.Editor
         private DeucarianEditorMessageData Row(NotificationItem item)
         {
             bool timed = item.Definition.Lifetime.Kind == NotificationLifetimeKind.Timed;
+            bool manual = !timed && item.Definition.AllowManualResolution;
             bool recovering = host.Session?.IsRecovering(item.Id) == true;
             double remaining = Math.Max(0, item.Definition.Lifetime.Seconds - (EditorApplication.timeSinceStartup - item.ActivatedAtSeconds));
             string state = recovering ? "Recovering…" : timed ? "Expires in " + remaining.ToString("0.0") + " s" : "";
@@ -221,7 +225,7 @@ namespace Deucarian.Notifications.Editor
                 item.Definition.Severity == NotificationSeverity.Success ? DeucarianEditorStatus.Success : DeucarianEditorStatus.Info;
             return new DeucarianEditorMessageData(item.Id.Value, item.Definition.Title, item.Definition.Body, status, state,
                 timed ? (float?)(remaining / item.Definition.Lifetime.Seconds) : null,
-                timed ? null : "Resolve", timed ? (Action)null : () => { host.Session?.Resolve(item.Id); Refresh(); }, !recovering);
+                manual ? "Resolve" : null, manual ? () => { host.Session?.Resolve(item.Id); Refresh(); } : (Action)null, !recovering);
         }
 
         public void Dispose() { if (disposed) return; disposed = true; definitions?.Dispose(); audioPanel?.Dispose(); preview.Dispose(); view.Dispose(); targets.Clear(); targetIds.Clear(); }
