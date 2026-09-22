@@ -54,7 +54,8 @@ namespace Deucarian.Notifications.Editor
                 var id = new NotificationId(prefix + definition.Id.Value);
                 current.Add(id);
                 var temporary = new NotificationDefinition(id, definition.Severity,
-                    definition.Title, definition.Body, definition.Priority, definition.FeedbackRoleId, definition.Lifetime);
+                    definition.Title, definition.Body, definition.Priority, definition.FeedbackRoleId,
+                    definition.Lifetime, definition.AllowManualResolution);
                 declarations.Register(temporary);
                 commands.Add(NotificationCommand.Activate(temporary));
             }
