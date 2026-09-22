@@ -24,11 +24,11 @@ namespace Deucarian.Notifications.Unity
             if (isActiveAndEnabled && button != null) button.onClick.AddListener(Resolve);
         }
 
-        internal void Bind(NotificationId notificationId, bool persistent, Action<NotificationId> handler)
+        internal void Bind(NotificationId notificationId, bool canResolveManually, Action<NotificationId> handler)
         {
             id = notificationId; resolve = handler;
             if (button == null) return;
-            button.gameObject.SetActive(persistent && handler != null);
+            button.gameObject.SetActive(canResolveManually && handler != null);
             button.interactable = true;
             button.targetGraphic.raycastTarget = CanResolve;
         }
