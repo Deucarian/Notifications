@@ -13,6 +13,7 @@ namespace Deucarian.Notifications.Editor
         private NotificationLabRecipeData CaptureDraft() => new NotificationLabRecipeData
         {
             title = messageTitle, body = messageBody, severity = severity, lifetime = lifetimeKind,
+            allowManualResolution = allowManualResolution,
             lifetimeSeconds = lifetimeSeconds, activationDelay = activationDelay, recoveryDelay = recoveryDelay,
             presentation = presentationSettings, experience = experience, sound = soundEnabled,
             paletteGuid = paletteSet == null ? "" : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(paletteSet))
@@ -27,6 +28,7 @@ namespace Deucarian.Notifications.Editor
             messageBody = value.body ?? "";
             severity = value.severity;
             lifetimeKind = value.lifetime;
+            allowManualResolution = value.allowManualResolution;
             lifetimeSeconds = Mathf.Max(0.1f, SanitizeDelay(value.lifetimeSeconds));
             activationDelay = SanitizeDelay(value.activationDelay);
             recoveryDelay = SanitizeDelay(value.recoveryDelay);

@@ -94,13 +94,14 @@ namespace Deucarian.Notifications.Editor
             return feedback != null && feedback.TryRequestFeedback(request);
         }
 
-        public static NotificationDefinition Example(NotificationSeverity severity, NotificationLifetime lifetime = default)
+        public static NotificationDefinition Example(NotificationSeverity severity, NotificationLifetime lifetime = default,
+            bool allowManualResolution = true)
         {
             return new NotificationDefinition(
                 "lab.example." + severity.ToString().ToLowerInvariant(), severity,
                 "Example " + severity.ToString().ToLowerInvariant(),
                 "This is a test message. Resolve it to simulate recovery.",
-                (int)severity * 10, FeedbackRole(severity), lifetime);
+                (int)severity * 10, FeedbackRole(severity), lifetime, allowManualResolution);
         }
 
         public static string FeedbackRole(NotificationSeverity severity)

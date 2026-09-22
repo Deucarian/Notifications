@@ -37,10 +37,15 @@ namespace Deucarian.Notifications.Unity
         public void BindResolution(Action<NotificationId> handler)
         {
             resolve = handler;
-            var group = GetComponent<CanvasGroup>();
-            if (group != null) group.interactable = group.blocksRaycasts = handler != null;
             foreach (var slot in slots) slot.Row.BindResolution(handler);
             foreach (var row in pool) row.BindResolution(handler);
+            RefreshInteraction();
+        }
+        private void RefreshInteraction()
+        {
+            var group = GetComponent<CanvasGroup>();
+            if (group != null) group.interactable = group.blocksRaycasts = resolve != null &&
+                slots.Exists(slot => slot.Motion.IsShowing && slot.Row.HasResolutionAction);
         }
         private readonly NotificationFollowMotion followMotion = new NotificationFollowMotion();
 #if UNITY_EDITOR
@@ -156,6 +161,7 @@ namespace Deucarian.Notifications.Unity
             try { ReconcileRows(); }
             finally { reconciling = false; }
             Layout();
+            RefreshInteraction();
         }
 
         private void ReconcileRows()
