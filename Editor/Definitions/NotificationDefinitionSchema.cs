@@ -17,6 +17,7 @@ namespace Deucarian.Notifications.Editor.Definitions
         [DefinitionField("message")] public string Message = "Please reconnect your device.";
         [DefinitionField("priority")] public int Priority;
         [DefinitionField("lifetime")] public NotificationLifetimeKind Lifetime;
+        [DefinitionField("allowManualResolution")] public bool AllowManualResolution = true;
         [DefinitionField("durationSeconds")] public float DurationSeconds = 5;
         [DefinitionField("sound")] public NotificationSoundPolicy Sound = NotificationSoundPolicy.SeverityDefault;
         [DefinitionField("customSound")] public DeucarianAudioRole CustomSound;
