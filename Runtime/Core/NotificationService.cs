@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Deucarian.Notifications
 {
@@ -22,12 +23,24 @@ namespace Deucarian.Notifications
             if (view == null) return;
             presenter = new NotificationPresenter(store, view);
             resolutionView = view as INotificationResolutionView;
-            try { resolutionView?.BindResolution(episodes.Resolve); presenter.Activate(); }
+            try { resolutionView?.BindResolution(ResolveFromView); presenter.Activate(); }
             catch { Dispose(); throw; }
         }
 
         public INotificationSource Source => store;
         public NotificationSnapshot Snapshot => store.Snapshot;
+
+        /// <summary>Validates the entire batch before applying keyed conditions and their activation/recovery delays.</summary>
+        public void EvaluateBatch(IEnumerable<NotificationCondition> conditions)
+        {
+            ThrowIfDisposed();
+            if (conditions == null) throw new ArgumentNullException(nameof(conditions));
+            var samples = new List<NotificationConditionSample>();
+            foreach (var condition in conditions)
+                samples.Add(new NotificationConditionSample(
+                    NotificationDefinitions.Require(definitions, condition.Key), condition.IsUnhealthy, condition.Timing));
+            episodes.EvaluateBatch(samples);
+        }
 
         public void Warn(NotificationKey key, string title, string message)
         {
@@ -53,7 +66,15 @@ namespace Deucarian.Notifications
             RequireKey(key);
             var definition = NotificationDefinitions.Require(definitions, key);
             Show(new NotificationDefinition(definition.Id, definition.Severity, overrides?.Title ?? definition.Title,
-                overrides?.Message ?? definition.Body, definition.Priority, overrides?.FeedbackRoleId ?? definition.FeedbackRoleId, definition.Lifetime));
+                overrides?.Message ?? definition.Body, definition.Priority, overrides?.FeedbackRoleId ?? definition.FeedbackRoleId,
+                definition.Lifetime, definition.AllowManualResolution));
+        }
+
+        private void ResolveFromView(NotificationId id)
+        {
+            if (disposed || !Snapshot.TryGet(id, out var item)) return;
+            if (item.Definition.AllowManualResolution && item.Definition.Lifetime.Kind == NotificationLifetimeKind.UntilResolved)
+                episodes.Resolve(id);
         }
 
         public void Resolve(NotificationKey key)

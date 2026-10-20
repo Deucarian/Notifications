@@ -42,15 +42,19 @@ namespace Deucarian.Notifications.Tests.Editor
             var asset = (NotificationDefinitionAsset)DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
             string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
             spec.Message = "Edited in C#";
+            spec.AllowManualResolution = false;
             Write(spec);
             DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
             Assert.That(asset.CreateDefinition().Body, Is.EqualTo(spec.Message));
+            Assert.That(asset.CreateDefinition().AllowManualResolution, Is.False);
             var fromAsset = (NotificationDefinitionSpec)schema.Read(asset);
             fromAsset.Title = "Edited in Inspector";
+            fromAsset.AllowManualResolution = true;
             schema.Apply(asset, fromAsset);
             DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
             var fromCode = (NotificationDefinitionSpec)DeucarianDefinitionSource.Read(schema, File.ReadAllText(SourcePath));
             Assert.That(fromCode.Title, Is.EqualTo(fromAsset.Title));
+            Assert.That(fromCode.AllowManualResolution, Is.True);
             Assert.That(fromCode.Id, Is.EqualTo(spec.Id));
             Assert.That(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset)), Is.EqualTo(guid));
             string source = File.ReadAllText(SourcePath);
@@ -123,6 +127,22 @@ namespace Deucarian.Notifications.Tests.Editor
         {
             File.WriteAllText(SourcePath, DeucarianDefinitionSource.Write(schema, spec));
             AssetDatabase.ImportAsset(SourcePath);
+        }
+
+        [Test]
+        public void OlderDefinitionsWithoutManualResolutionKeepTheirResolveAction()
+        {
+            var spec = (NotificationDefinitionSpec)schema.Create("LegacyManualResolution");
+            Write(spec);
+            var asset = (NotificationDefinitionAsset)DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
+            string assetPath = AssetDatabase.GetAssetPath(asset);
+            AssetDatabase.SaveAssets();
+            File.WriteAllText(SourcePath, File.ReadAllText(SourcePath).Replace("            AllowManualResolution = true,", ""));
+            File.WriteAllText(assetPath, File.ReadAllText(assetPath).Replace("  allowManualResolution: 1", ""));
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            asset = (NotificationDefinitionAsset)DeucarianDefinitionSync.SynchronizeSource(schema, SourcePath);
+            Assert.That(asset.CreateDefinition().AllowManualResolution, Is.True);
+            Assert.That(((NotificationDefinitionSpec)DeucarianDefinitionSource.Read(schema, File.ReadAllText(SourcePath))).AllowManualResolution, Is.True);
         }
 
         [Test]

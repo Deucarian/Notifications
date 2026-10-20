@@ -21,8 +21,9 @@ namespace Deucarian.Notifications
             string body,
             int priority = 0,
             string feedbackRoleId = null,
-            NotificationLifetime lifetime = default)
-            : this(new NotificationId(id), severity, title, body, priority, feedbackRoleId, lifetime)
+            NotificationLifetime lifetime = default,
+            bool allowManualResolution = true)
+            : this(new NotificationId(id), severity, title, body, priority, feedbackRoleId, lifetime, allowManualResolution)
         {
         }
 
@@ -33,7 +34,8 @@ namespace Deucarian.Notifications
             string body,
             int priority = 0,
             string feedbackRoleId = null,
-            NotificationLifetime lifetime = default)
+            NotificationLifetime lifetime = default,
+            bool allowManualResolution = true)
         {
             if (id.IsEmpty)
             {
@@ -46,6 +48,7 @@ namespace Deucarian.Notifications
             Body = body ?? string.Empty;
             Priority = priority;
             Lifetime = lifetime;
+            AllowManualResolution = allowManualResolution;
             FeedbackRoleId = string.IsNullOrWhiteSpace(feedbackRoleId)
                 ? string.Empty
                 : feedbackRoleId.Trim();
@@ -58,6 +61,8 @@ namespace Deucarian.Notifications
         public int Priority { get; }
         public string FeedbackRoleId { get; }
         public NotificationLifetime Lifetime { get; }
+        /// <summary>Allows a view to dismiss a persistent notification. Condition recovery and programmatic resolution remain available.</summary>
+        public bool AllowManualResolution { get; }
 
         public bool Equals(NotificationDefinition other)
         {
@@ -66,6 +71,7 @@ namespace Deucarian.Notifications
                    Severity == other.Severity &&
                    Priority == other.Priority &&
                    Lifetime.Equals(other.Lifetime) &&
+                   AllowManualResolution == other.AllowManualResolution &&
                    string.Equals(Title, other.Title, StringComparison.Ordinal) &&
                    string.Equals(Body, other.Body, StringComparison.Ordinal) &&
                    string.Equals(FeedbackRoleId, other.FeedbackRoleId, StringComparison.Ordinal);
@@ -81,6 +87,7 @@ namespace Deucarian.Notifications
                 hash = (hash * 397) ^ (int)Severity;
                 hash = (hash * 397) ^ Priority;
                 hash = (hash * 397) ^ Lifetime.GetHashCode();
+                hash = (hash * 397) ^ AllowManualResolution.GetHashCode();
                 hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(Title);
                 hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(Body);
                 hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(FeedbackRoleId);

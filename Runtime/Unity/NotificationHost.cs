@@ -1,4 +1,5 @@
 using System;
+using Deucarian.Common;
 using Deucarian.Theming;
 using UnityEngine;
 
@@ -15,6 +16,44 @@ namespace Deucarian.Notifications.Unity
         private NotificationService service;
         public NotificationService Service => service ??
             throw new InvalidOperationException("The notification host must be enabled.");
+        public NotificationListView View => GetComponent<NotificationListView>();
+
+        /// <summary>Mounts the current package list and owns its service, scheduling and default registration.</summary>
+        public static NotificationHost Create(RectTransform parent, DeucarianThemeAudioPlayer audioPlayer = null,
+            NotificationCatalogAsset catalog = null, bool registerAsDefault = true)
+        {
+            if (parent == null) throw new ArgumentNullException(nameof(parent));
+            if (registerAsDefault && NotificationManager.IsConfigured)
+                throw new InvalidOperationException("A default notification host is already configured.");
+            if (TMPro.TMP_Settings.instance == null)
+                throw new InvalidOperationException("Import TMP Essential Resources before creating a notification host.");
+            var instance = Instantiate(NotificationViewDefaults.LoadListPrefab(), parent, false);
+            instance.SetActive(false);
+            try
+            {
+                foreach (var child in instance.GetComponentsInChildren<Transform>(true))
+                    child.gameObject.layer = parent.gameObject.layer;
+                var rect = (RectTransform)instance.transform;
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+                var group = instance.GetComponent<CanvasGroup>() ?? instance.AddComponent<CanvasGroup>();
+                group.interactable = false;
+                group.blocksRaycasts = false;
+                var host = instance.GetComponent<NotificationHost>() ?? instance.AddComponent<NotificationHost>();
+                host.audioPlayer = audioPlayer;
+                host.catalog = catalog;
+                host.registerAsDefault = registerAsDefault;
+                host.View.ConfigurePresentation(NotificationViewSettings.ResolvePresentation(NotificationPresentationSettings.Default));
+                instance.SetActive(true);
+                return host;
+            }
+            catch
+            {
+                UnityObjectUtility.DestroySafely(instance);
+                throw;
+            }
+        }
 
         private void OnEnable()
         {

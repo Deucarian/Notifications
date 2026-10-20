@@ -26,10 +26,12 @@ namespace Deucarian.Notifications.Tests
                 var root = window.rootVisualElement;
                 Assert.That(root.Q(className: "deucarian-workspace"), Is.Not.Null);
                 root.Q<TextField>("lab-title").value = "Connected UI test";
+                root.Q<Toggle>("lab-manual-resolution").value = false;
                 Assert.That(window.Inputs.title, Is.EqualTo("Connected UI test"));
                 yield return Click(root.Q<Button>("lab-add"));
                 Assert.That(window.SessionForTests.Store.Snapshot.Count, Is.EqualTo(1));
                 Assert.That(window.SessionForTests.Store.Snapshot[0].Definition.Title, Is.EqualTo("Connected UI test"));
+                Assert.That(window.SessionForTests.Store.Snapshot[0].Definition.AllowManualResolution, Is.False);
                 Assert.That(root.Q("lab-visible-rows").childCount, Is.EqualTo(1));
                 root.Q<DeucarianEditorStepper>("lab-maximum").value = 2;
                 window.ShowMixed();
