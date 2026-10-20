@@ -40,6 +40,21 @@ namespace Deucarian.Notifications
         public double RecoveryDebounceSeconds { get; }
     }
 
+    /// <summary>A registered condition submitted through the application notification service.</summary>
+    public readonly struct NotificationCondition
+    {
+        public NotificationCondition(NotificationKey key, bool isUnhealthy, NotificationTimingPolicy timing = default)
+        {
+            Key = key ?? throw new ArgumentNullException(nameof(key));
+            IsUnhealthy = isUnhealthy;
+            Timing = timing;
+        }
+
+        public NotificationKey Key { get; }
+        public bool IsUnhealthy { get; }
+        public NotificationTimingPolicy Timing { get; }
+    }
+
     public readonly struct NotificationConditionSample
     {
         public NotificationConditionSample(

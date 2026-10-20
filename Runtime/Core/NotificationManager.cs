@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Deucarian.Notifications
 {
@@ -24,6 +25,7 @@ namespace Deucarian.Notifications
         public static void Show(NotificationKey key, string title = null, string message = null) => Service.Show(key, title, message);
         public static void Show(NotificationKey key, NotificationContentOverrides overrides) => Service.Show(key, overrides);
         public static void Resolve(NotificationKey key) => Service.Resolve(key);
+        public static void EvaluateBatch(IEnumerable<NotificationCondition> conditions) => Service.EvaluateBatch(conditions);
 
         private sealed class Registration : IDisposable
         {

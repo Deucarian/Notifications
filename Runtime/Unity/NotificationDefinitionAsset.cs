@@ -16,6 +16,8 @@ namespace Deucarian.Notifications.Unity
         [SerializeField, TextArea] private string message = "Please reconnect your device.";
         [SerializeField] private int priority;
         [SerializeField] private NotificationLifetimeKind lifetime;
+        [SerializeField, Tooltip("Show a Resolve button for persistent notifications. Disable when application conditions own recovery.")]
+        private bool allowManualResolution = true;
         [SerializeField, Min(0.01f)] private float durationSeconds = 5;
         [SerializeField] private NotificationSoundPolicy sound = NotificationSoundPolicy.SeverityDefault;
         [SerializeField] private DeucarianAudioRole customSound;
@@ -38,7 +40,7 @@ namespace Deucarian.Notifications.Unity
                     case NotificationSeverity.Error: feedback = AudioRoles.Feedback.Error.Id; break;
                 }
             return new NotificationDefinition(id, severity, title, message, priority, feedback,
-                lifetime == NotificationLifetimeKind.Timed ? NotificationLifetime.Timed(durationSeconds) : default);
+                lifetime == NotificationLifetimeKind.Timed ? NotificationLifetime.Timed(durationSeconds) : default, allowManualResolution);
         }
         private sealed class AssetKey : NotificationKey { internal AssetKey(string value) : base(value) { } }
     }
