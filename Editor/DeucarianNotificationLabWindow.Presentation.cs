@@ -10,6 +10,7 @@ namespace Deucarian.Notifications.Editor
     public sealed partial class DeucarianNotificationLabWindow
     {
         [SerializeField] private NotificationLifetimeKind lifetimeKind;
+        [SerializeField] private bool allowManualResolution = true;
         [SerializeField] private float lifetimeSeconds = 5f;
         [SerializeField] private NotificationPresentationSettings presentationSettings = NotificationPresentationSettings.Default;
 
